@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>우리들의 교환일기</title>
+<meta name="theme-color" content="#DDE8E4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap">
+<script src="config.js"></script>
+<style>
+:root{--bg:#DDE8E4;--ink:#26324a;--sub:#44605b;--deep:#3D6B66;--paper:#FFFCF3;--line:#E3D9C4;--hole:#DDE8E4}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:#2f3b39;font-family:'Gowun Dodum',sans-serif;-webkit-text-size-adjust:100%}
+button,input,textarea{font-family:inherit}
+button{cursor:pointer}
+.hand{font-family:'Gaegu',cursive}
+.wrap{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;padding:20px 16px 96px;display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font-family:'Gaegu',cursive;font-weight:700;font-size:30px;line-height:1.2}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.top .who{font-size:13px;color:var(--sub);text-align:right;line-height:1.4}
+.muted{font-size:13px;color:var(--sub);line-height:1.6}
+.hidden{display:none!important}
+
+/* 노트 */
+.note{position:relative;background:var(--paper);border-radius:4px 12px 12px 4px;box-shadow:0 8px 18px rgba(40,70,65,.18);padding:30px 18px 18px 46px;display:flex;flex-direction:column;gap:10px}
+.note .holes{position:absolute;left:12px;top:22px;bottom:22px;display:flex;flex-direction:column;justify-content:space-between}
+.note .holes i{display:block;width:14px;height:14px;border-radius:50%;background:var(--hole);box-shadow:inset 0 2px 3px rgba(0,0,0,.25)}
+.tape{position:absolute;top:-10px;width:100px;height:26px;opacity:.85;pointer-events:none}
+.ruled{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 35px,var(--line) 35px,var(--line) 36px)}
+.dtext{margin:0;font-family:'Gaegu',cursive;font-size:22px;line-height:36px;color:var(--ink);white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 12px;font-family:'Gaegu',cursive;font-size:19px;color:#5a6b68}
+.meta span{white-space:nowrap}
+
+/* 버튼 */
+.btn{height:52px;border-radius:12px;border:none;background:var(--deep);color:#fff;font-family:'Gaegu',cursive;font-weight:700;font-size:21px;padding:0 18px}
+.btn:disabled{background:#A9BDB9;cursor:default}
+.btn.line{background:transparent;border:2px solid var(--deep);color:var(--deep)}
+.btn.small{height:44px;font-size:18px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;color:var(--sub)}
+.field input{height:52px;border-radius:12px;border:2px solid #B9CCC8;background:#fff;font-size:22px;padding:0 14px;letter-spacing:.12em;text-transform:uppercase;outline:none}
+.field input:focus{border-color:var(--deep)}
+.msg{min-height:20px;font-size:14px;color:#9B3A24;line-height:1.5}
+.msg.ok{color:var(--deep)}
+.roster{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.roster button{position:relative;height:58px;border-radius:12px;border:2px solid #B9CCC8;background:#fff;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
+.roster button b{font-family:'Gaegu',cursive;font-size:26px;line-height:1}
+.roster button span{font-size:12px;color:var(--sub)}
+.roster button.new::after{content:'처음';position:absolute;top:-7px;right:-4px;background:#F2B544;color:#4a3500;font-size:10px;font-weight:700;border-radius:8px;padding:1px 5px}
+.roster button:active{border-color:var(--deep);background:#E6F1EE}
+.field input[type=password]{letter-spacing:.5em;text-transform:none}
+.card{background:#fff;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+
+/* 아래 메뉴 */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #C9D8D4;display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav.tabs .in{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;max-width:480px}
+nav.tabs button{position:relative;height:64px;border:none;background:transparent;color:#5d716d;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+nav.tabs button svg{width:24px;height:24px}
+nav.tabs button.on{color:var(--deep);font-weight:700}
+nav.tabs button.on::after{content:'';position:absolute;top:0;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--deep)}
+@media (min-width:700px){
+  nav.tabs{position:sticky;top:0;bottom:auto;border-top:none;border-bottom:1px solid #C9D8D4;padding-bottom:0}
+  nav.tabs button{height:56px;flex-direction:row;gap:6px;font-size:14px}
+  nav.tabs button.on::after{top:auto;bottom:0;border-radius:3px 3px 0 0}
+  nav.tabs .modal{position:fixed;inset:0;background:rgba(30,45,42,.55);display:flex;align-items:center;justify-content:center;padding:18px;z-index:60}
+.modal .note{width:100%;max-width:420px;max-height:92vh;overflow-y:auto}
+.gcard{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;min-height:250px;justify-content:center}
+.gcard .ic{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.gcard .ic svg{width:44px;height:44px}
+.gcard h2{margin:0;font-family:'Gaegu',cursive;font-size:26px;color:var(--ink)}
+.gcard p{margin:0;font-size:15px;line-height:1.7;color:#3c4f4b;word-break:keep-all}
+.dots{display:flex;justify-content:center;gap:8px}
+.dots i{width:9px;height:9px;border-radius:50%;background:#C9D8D4}
+.dots i.on{background:var(--deep);width:22px;border-radius:5px}
+.rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.rules li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.6;color:#2f3b39;word-break:keep-all}
+.rules li b{flex:0 0 26px;height:26px;border-radius:50%;background:#E6F1EE;color:var(--deep);display:flex;align-items:center;justify-content:center;font-size:13px}
+details.tips{background:#FFFDF5;border:1.5px dashed #E3C77A;border-radius:12px;padding:10px 14px}
+details.tips summary{cursor:pointer;font-family:'Gaegu',cursive;font-weight:700;font-size:19px;color:#5C4300}
+details.tips .rules{margin-top:10px}
+.help{width:30px;height:30px;border-radius:50%;border:1.5px solid #9AB7B2;background:#fff;color:var(--deep);font-weight:700;font-size:15px;vertical-align:middle;margin-left:6px;padding:0}
+.badge{top:6px;left:auto;right:12%}
+  .wrap{padding-bottom:40px}
+  .toast{bottom:28px}
+}
+.modal{position:fixed;inset:0;background:rgba(30,45,42,.55);display:flex;align-items:center;justify-content:center;padding:18px;z-index:60}
+.modal .note{width:100%;max-width:420px;max-height:92vh;overflow-y:auto}
+.gcard{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;min-height:250px;justify-content:center}
+.gcard .ic{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.gcard .ic svg{width:44px;height:44px}
+.gcard h2{margin:0;font-family:'Gaegu',cursive;font-size:26px;color:var(--ink)}
+.gcard p{margin:0;font-size:15px;line-height:1.7;color:#3c4f4b;word-break:keep-all}
+.dots{display:flex;justify-content:center;gap:8px}
+.dots i{width:9px;height:9px;border-radius:50%;background:#C9D8D4}
+.dots i.on{background:var(--deep);width:22px;border-radius:5px}
+.rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.rules li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.6;color:#2f3b39;word-break:keep-all}
+.rules li b{flex:0 0 26px;height:26px;border-radius:50%;background:#E6F1EE;color:var(--deep);display:flex;align-items:center;justify-content:center;font-size:13px}
+details.tips{background:#FFFDF5;border:1.5px dashed #E3C77A;border-radius:12px;padding:10px 14px}
+details.tips summary{cursor:pointer;font-family:'Gaegu',cursive;font-weight:700;font-size:19px;color:#5C4300}
+details.tips .rules{margin-top:10px}
+.help{width:30px;height:30px;border-radius:50%;border:1.5px solid #9AB7B2;background:#fff;color:var(--deep);font-weight:700;font-size:15px;vertical-align:middle;margin-left:6px;padding:0}
+.badge{position:absolute;top:8px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:#D9573C;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px}
+
+/* 스티커 */
+.stickers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:6px 4px}
+.stk{height:52px;min-width:0;padding:0 2px;border-radius:14px;border:3px solid #fff;font-family:'Gaegu',cursive;font-weight:700;font-size:16px;white-space:nowrap;box-shadow:0 3px 6px rgba(0,0,0,.12);transition:transform .15s}
+.stk:nth-child(1){background:#F7C9C0;color:#6B2A20;transform:rotate(-2deg)}
+.stk:nth-child(2){background:#FFE29A;color:#5C4300;transform:rotate(1.5deg)}
+.stk:nth-child(3){background:#BFE3C8;color:#1F5130;transform:rotate(-1deg)}
+.stk:nth-child(4){background:#CFD6F5;color:#2B3570;transform:rotate(2deg)}
+.stk.on{box-shadow:0 0 0 3px var(--deep),0 3px 6px rgba(0,0,0,.15);transform:rotate(0)}
+.stuck{position:absolute;right:14px;bottom:14px;transform:rotate(-8deg);border-radius:14px;border:3px solid #fff;padding:6px 10px;font-family:'Gaegu',cursive;font-weight:700;font-size:16px;box-shadow:0 3px 6px rgba(0,0,0,.15);animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.3) rotate(-30deg);opacity:0}100%{transform:scale(1) rotate(-8deg);opacity:1}}
+
+/* 쓰기 */
+.weather{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.weather button{height:44px;border-radius:10px;border:1.5px dashed #9AB7B2;background:transparent;color:var(--sub);font-family:'Gaegu',cursive;font-size:17px}
+.weather button.on{border:2px solid var(--deep);background:#E6F1EE;color:#2a4b47;font-weight:700}
+textarea.dtext{width:100%;min-height:360px;resize:none;overflow:hidden;background-attachment:local;border:none;outline:none;background-color:transparent;padding:0}
+.bar{height:10px;border-radius:5px;background:#EDE6D6;overflow:hidden}
+.bar i{display:block;height:10px;width:0;background:#F2B544;transition:width .25s,background .25s}
+.bar i.full{background:#5FA88A}
+.bar i.over{background:#D9573C}
+.lenrow{display:flex;justify-content:space-between;font-size:12px;color:var(--sub)}
+.warn{border-radius:8px;padding:9px 11px;font-size:13px;line-height:1.5}
+.warn.block{background:#FBE0DA;color:#7A2414}
+.warn.check{background:#FFF4C7;color:#5C4300}
+
+/* 뽑기 */
+.ticket{background:#fff;border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border:2px dashed #F2B544}
+.ticket b{font-family:'Gaegu',cursive;font-size:20px;color:#5C4300}
+.board{position:relative;height:330px;background:var(--paper);border-radius:12px;box-shadow:0 8px 18px rgba(40,70,65,.18);overflow:hidden}
+.slip{position:absolute;top:60px;width:100px;height:122px;border:none;border-radius:4px;padding:0;box-shadow:0 4px 8px rgba(0,0,0,.15);transition:transform .25s,box-shadow .25s,opacity .4s}
+.slip::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.08)}
+.slip .tp{position:absolute;left:28px;top:-10px;width:44px;height:18px;transition:transform .5s,opacity .5s}
+.slip.s0{left:7%;background:#F7E7C6;transform:rotate(-8deg)}
+.slip.s1{left:calc(50% - 50px);top:44px;background:#E3F0D9;transform:rotate(2deg)}
+.slip.s2{right:7%;background:#DCE3F6;transform:rotate(9deg)}
+.slip.s0 .tp{background:rgba(240,170,150,.85);transform:rotate(6deg)}
+.slip.s1 .tp{background:rgba(150,200,190,.9);transform:rotate(-4deg)}
+.slip.s2 .tp{background:rgba(255,214,120,.9);transform:rotate(-5deg)}
+.slip.pick{box-shadow:0 16px 22px rgba(0,0,0,.22);outline:3px solid var(--deep);z-index:2}
+.slip.s0.pick{transform:rotate(-4deg) translateY(-12px)}
+.slip.s1.pick{transform:rotate(0) translateY(-12px)}
+.slip.s2.pick{transform:rotate(4deg) translateY(-12px)}
+.slip.gone{opacity:0;transform:translateY(40px) scale(.8)!important}
+.slip.peel .tp{transform:translate(30px,-30px) rotate(40deg);opacity:0}
+.slip.open{z-index:3;transition:transform .6s cubic-bezier(.3,1.4,.5,1);transform:translate(0,-10px) scale(1.25) rotate(0)!important}
+.slip:disabled{cursor:default}
+.board .ask{position:absolute;left:0;right:0;bottom:24px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.board .ask span{font-family:'Gaegu',cursive;font-size:22px;color:var(--ink)}
+.wiggle{animation:wig 1.6s ease-in-out infinite}
+@keyframes wig{0%,100%{translate:0 0}50%{translate:0 -5px}}
+.reveal{animation:rise .6s ease-out}
+@keyframes rise{0%{opacity:0;transform:translateY(30px) scale(.96)}100%{opacity:1;transform:none}}
+
+/* 내 일기 */
+.chip{display:inline-block;border-radius:10px;padding:3px 10px;font-size:12px;line-height:1.5}
+.chip.wait{background:#FFF4C7;color:#5C4300}
+.chip.okay{background:#E3F0D9;color:#1F5130}
+.chip.no{background:#FBE0DA;color:#7A2414}
+.mine{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:1px solid #E6ECEA}
+.mine:last-child{border-bottom:none}
+.mine .row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px}
+.mine details summary{font-size:13px;color:var(--deep);cursor:pointer}
+.mine .body{margin-top:8px;font-size:15px;line-height:1.7;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;background:#FAF8F2;border-radius:8px;padding:10px}
+del{color:#9B3A24;background:#FBE0DA;text-decoration:line-through}
+ins{color:#1F5130;background:#DDF0E2;text-decoration:none}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#26324a;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:40;max-width:90vw;text-align:center;animation:rise .3s}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:36px 12px;color:var(--sub);line-height:1.7}
+.empty .hand{font-size:24px;color:var(--ink)}
+/* 움직임 */
+@keyframes inR{from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:none}}
+@keyframes inL{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
+@keyframes pageIn{from{opacity:0;transform:perspective(900px) rotateY(-18deg) translateX(20px);transform-origin:left center}to{opacity:1;transform:none}}
+@keyframes flipR{from{opacity:.2;transform:perspective(1000px) rotateY(-75deg);transform-origin:left center}to{opacity:1;transform:none}}
+@keyframes flipL{from{opacity:.2;transform:perspective(1000px) rotateY(75deg);transform-origin:right center}to{opacity:1;transform:none}}
+@keyframes popIn{0%{opacity:0;transform:scale(.6)}70%{transform:scale(1.08)}100%{opacity:1;transform:none}}
+@keyframes bump{0%,100%{transform:scale(1)}30%{transform:scale(1.5)}60%{transform:scale(.9)}}
+@keyframes fold{0%{transform:none;opacity:1}45%{transform:perspective(900px) rotateX(70deg) scale(.6);opacity:.9}100%{transform:perspective(900px) rotateX(85deg) scale(.15) translateY(-200px);opacity:0}}
+@keyframes fly{0%{transform:translate(-50%,0) rotate(-10deg) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(60vw,-75vh) rotate(18deg) scale(1.1);opacity:0}}
+@keyframes burst{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1);opacity:0}}
+.in-r{animation:inR .32s ease-out}
+.in-l{animation:inL .32s ease-out}
+.page-in{animation:pageIn .38s ease-out}
+.flip-r{animation:flipR .45s ease-out}
+.flip-l{animation:flipL .45s ease-out}
+.pop-in{animation:popIn .35s ease-out both}
+.badge.bump{animation:bump .6s ease-out 2}
+.folding{animation:fold .7s ease-in forwards;pointer-events:none}
+.plane{position:fixed;left:50%;bottom:22%;width:64px;height:64px;color:var(--deep);z-index:70;pointer-events:none;animation:fly 1s ease-in forwards}
+.spark{position:absolute;width:12px;height:12px;border-radius:3px;pointer-events:none;animation:burst .9s ease-out forwards;z-index:5;box-shadow:0 0 6px rgba(255,255,255,.8)}
+</style>
+</head>
+<body>
+
+<!-- 입장 -->
+<main class="wrap" id="vEnter">
+  <div style="height:6vh"></div>
+  <div class="note ruled" style="background-position:0 76px">
+    <div class="holes"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="tape" style="left:110px;background:rgba(240,170,150,.75);transform:rotate(-4deg)"></div>
+    <h1>우리들의 교환일기</h1>
+    <div id="stRoom" class="step">
+      <p class="muted" style="margin:0 0 10px">다른 학교 친구와 일기를 주고받아요.<br>선생님께 받은 방 코드를 넣어 주세요.</p>
+      <div class="field"><label for="inRoom">방 코드 (5자리)</label><input id="inRoom" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
+      <button class="btn" id="btnRoomNext" style="width:100%;margin-top:12px">다음</button>
+    </div>
+    <div id="stList" class="step hidden">
+      <p class="muted" style="margin:0 0 10px"><b id="rosterRoom"></b> · 내 출석 번호를 눌러 주세요.</p>
+      <div class="roster" id="roster"></div>
+      <button class="btn line small" data-back="stRoom" style="width:100%;margin-top:12px">방 코드 다시 넣기</button>
+    </div>
+    <div id="stPin" class="step hidden">
+      <p class="hand" id="pinWho" style="margin:0;font-size:26px;color:var(--ink)"></p>
+      <p class="muted" id="pinHelp" style="margin:0 0 10px"></p>
+      <div class="field"><label for="inPin" id="pinLabel">비밀번호 (숫자 4자리)</label><input id="inPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"></div>
+      <div class="field" id="pin2Wrap" style="margin-top:10px"><label for="inPin2">한 번 더 넣어 주세요</label><input id="inPin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"></div>
+      <button class="btn" id="btnPin" style="width:100%;margin-top:12px">일기장 펼치기</button>
+      <button class="btn line small" data-back="stList" style="width:100%;margin-top:8px">다른 번호 고르기</button>
+    </div>
+    <p class="msg" id="enterMsg"></p>
+  </div>
+</main>
+
+<!-- 필명 -->
+<main class="wrap hidden" id="vPen">
+  <div style="height:6vh"></div>
+  <div class="note">
+    <div class="holes"><i></i><i></i><i></i><i></i></div>
+    <div class="tape" style="left:120px;background:rgba(150,200,190,.8);transform:rotate(4deg)"></div>
+    <h1>필명을 정해요</h1>
+    <p class="muted" style="margin:0">일기 끝에 들어갈 나만의 이름이에요.<br>진짜 이름이나 학교를 알 수 있는 이름은 쓰지 마세요.</p>
+    <div class="field"><label for="inPen">필명 (한글·영어·숫자 2~8자)</label><input id="inPen" maxlength="8" autocomplete="off" style="text-transform:none;letter-spacing:0" placeholder="예) 별빛고래"></div>
+    <p class="msg" id="penMsg"></p>
+    <button class="btn" id="btnPen">이 필명으로 할래요</button>
+  </div>
+</main>
+
+<!-- 앱 -->
+<div class="modal hidden" id="guide" role="dialog" aria-modal="true" aria-labelledby="gTitle">
+  <div class="note" style="gap:14px">
+    <div class="holes"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="tape" style="left:110px;background:rgba(240,170,150,.75);transform:rotate(-4deg)"></div>
+    <div class="gcard" id="gCard"></div>
+    <div class="dots" id="gDots"></div>
+    <div style="display:flex;gap:8px"><button class="btn line small" id="gPrev" style="flex:1">이전</button><button class="btn small" id="gNext" style="flex:2">다음</button></div>
+  </div>
+</div>
+<div class="modal hidden" id="promise" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+  <div class="note" style="gap:14px">
+    <div class="holes"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="tape" style="right:40px;background:rgba(255,214,120,.85);transform:rotate(5deg)"></div>
+    <h1 id="pTitle" style="font-size:28px">일기 쓰기 약속</h1>
+    <p class="muted" style="margin:0">다른 학교 친구가 읽는 일기예요. 쓰기 전에 함께 약속해요.</p>
+    <ul class="rules" id="promiseList"></ul>
+    <button class="btn" id="btnPromise">약속할게요</button>
+    <button class="btn line small" id="btnPromiseLater">다음에 쓸래요</button>
+  </div>
+</div>
+<nav class="tabs hidden" id="nav"><div class="in">
+  <button data-t="tRecv" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M4 6l8 6 8-6"/></svg>받은 일기<span class="badge hidden" id="bRecv"></span></button>
+  <button data-t="tDraw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12l-2 16H8z"/><path d="M9 8h6M10 12h4"/></svg>쪽지 뽑기<span class="badge hidden" id="bDraw"></span></button>
+  <button data-t="tWrite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>일기 쓰기</button>
+  <button data-t="tMine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h11a1 1 0 0 1 1 1v17l-6-3-6 3V4a1 1 0 0 1 1-1z"/></svg>내 일기<span class="badge hidden" id="bMine"></span></button>
+</div></nav>
+<main class="wrap hidden" id="vApp">
+  <div class="top">
+    <h1 id="title">받은 일기</h1>
+    <div class="who"><button id="whoPen" class="hand" data-go="tMine" aria-label="내 필명 (바꾸려면 누르세요)" style="font-size:20px;color:var(--ink);background:none;border:none;padding:0;text-decoration:underline dotted #9AB7B2;text-underline-offset:4px"></button><br><span id="whoRoom"></span> · <a href="#" id="lnkOut" style="color:var(--sub)">나가기</a> <button class="help" id="btnHelp" aria-label="교환일기 안내 다시 보기">?</button></div>
+  </div>
+
+  <!-- 받은 일기 -->
+  <section id="tRecv" class="pane"></section>
+
+  <!-- 쪽지 뽑기 -->
+  <section id="tDraw" class="pane hidden"></section>
+
+  <!-- 일기 쓰기 -->
+  <section id="tWrite" class="pane hidden">
+    <div class="note hidden" id="wDone">
+      <div class="holes"><i></i><i></i><i></i><i></i></div>
+      <div class="tape" style="left:110px;background:rgba(150,200,190,.8);transform:rotate(-3deg)"></div>
+      <div class="empty"><div class="hand">이번 주 일기를 다 썼어요!</div><span id="wDoneTxt"></span></div>
+      <button class="btn" data-go="tDraw">쪽지 뽑으러 가기</button>
+      <button class="btn line small" data-go="tMine">내 일기 보기</button>
+    </div>
+    <div id="wForm" style="display:flex;flex-direction:column;gap:14px">
+    <details class="tips"><summary>쓰기 전에 읽어요</summary><ul class="rules" id="tipsList"></ul></details>
+    <div class="note" style="gap:12px">
+      <div class="holes"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="tape" style="right:40px;background:rgba(150,200,190,.8);transform:rotate(5deg)"></div>
+      <div class="meta"><span id="wDate"></span><span id="wCount"></span></div>
+      <div class="field"><label>오늘 날씨</label>
+        <div class="weather" id="wWeather"><button data-w="맑음">맑음</button><button data-w="흐림">흐림</button><button data-w="비">비</button><button data-w="눈">눈</button></div>
+      </div>
+      <label for="wText" class="muted">다른 학교 친구에게 들려주고 싶은 이야기</label>
+      <textarea id="wText" class="dtext ruled" placeholder="오늘 있었던 일, 요즘 빠져 있는 것, 친구에게 묻고 싶은 것…"></textarea>
+      <div id="wWarn" class="hidden"></div>
+      <div><div class="bar"><i id="wBar"></i></div><div class="lenrow"><span id="wLen">0자</span><span id="wNeed"></span></div></div>
+    </div>
+    <p class="muted" style="margin:0">· 전화번호, 이메일, SNS 아이디는 보낼 수 없어요.<br>· 선생님이 읽어 보고 보내 줘요. 확인을 받으면 쪽지 뽑기권이 생겨요.</p>
+    <p class="msg" id="wMsg"></p>
+    <button class="btn" id="btnSend" disabled>선생님께 보내기</button>
+    </div>
+  </section>
+
+  <!-- 내 일기 -->
+  <section id="tMine" class="pane hidden"></section>
+</main>
+
+
+<script>
+(function () {
+  const API = window.DIARY_API;
+  const KEY = 'diary:me', DRAFT = 'diary:draft';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } },
+    set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  let me = store.get(KEY);            // {room, code}
+  let home = null, tab = 'tRecv', recvIdx = 0, weather = '', picked = -1, drawing = false;
+  const STK_COLORS = { '공감해요': ['#F7C9C0', '#6B2A20'], '재밌어요': ['#FFE29A', '#5C4300'], '응원해요': ['#BFE3C8', '#1F5130'], '나도 그래': ['#CFD6F5', '#2B3570'] };
+
+  async function call(action, data) {
+    if (!API || API.indexOf('http') !== 0) return { ok: false, error: '아직 서버 주소가 설정되지 않았어요. 선생님께 알려 주세요.' };
+    let last = null;
+    for (let k = 0; k < 3; k++) {
+      try {
+        const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action }, me || {}, data || {})) });
+        const j = await r.json();
+        if (j.ok || j.code !== 'BUSY') return j;
+        last = j;
+      } catch (e) { last = { ok: false, error: '연결하지 못했어요. 인터넷을 확인해 주세요.', net: true }; }
+      await new Promise(r => setTimeout(r, 700 * (k + 1)));
+    }
+    return last;
+  }
+  function toast(t) {
+    const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d);
+    setTimeout(() => d.remove(), 2600);
+  }
+  function show(v) { ['vEnter', 'vPen', 'vApp'].forEach(x => $(x).classList.toggle('hidden', x !== v)); $('nav').classList.toggle('hidden', v !== 'vApp'); }
+  const fmtDate = t => { const d = new Date(t); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + '일월화수목금토'[d.getDay()] + '요일'; };
+  const daysLeft = t => Math.max(1, Math.ceil((t - Date.now()) / 86400000));
+  const holes = n => '<div class="holes">' + '<i></i>'.repeat(n) + '</div>';
+  const unauthorized = j => j && ['NOSTUDENT', 'NOROOM', 'NOPIN', 'WRONGPIN', 'LOCKED'].indexOf(j.code) >= 0;
+
+  /* ---------- 입장 ---------- */
+  let roomCode = '', pickNo = 0, pickHas = false;
+  function step(id, keepMsg) {
+    ['stRoom', 'stList', 'stPin'].forEach(x => $(x).classList.toggle('hidden', x !== id));
+    anim($(id), 'page-in');
+    if (!keepMsg) { $('enterMsg').className = 'msg'; $('enterMsg').textContent = ''; }
+  }
+  function busyMsg(t) { $('enterMsg').className = 'msg ok'; $('enterMsg').innerHTML = '<span class="spin"></span> ' + t; }
+  function errMsg(t) { $('enterMsg').className = 'msg'; $('enterMsg').textContent = t; }
+  async function loadRoster(keepMsg) {
+    const room = $('inRoom').value.trim().toUpperCase();
+    if (room.length !== 5) { step('stRoom'); return errMsg('방 코드 5자리를 넣어 주세요.'); }
+    $('btnRoomNext').disabled = true; busyMsg('반을 찾는 중…');
+    const j = await call('sRoster', { room });
+    $('btnRoomNext').disabled = false;
+    if (!j.ok) { step('stRoom', true); return errMsg(j.error); }
+    roomCode = room;
+    $('rosterRoom').textContent = j.roomName;
+    $('roster').innerHTML = j.list.length ? j.list.map(x => `<button class="pop-in ${x.hasPin ? '' : 'new'}" style="animation-delay:${Math.min(x.no, 30) * 18}ms" data-no="${x.no}" data-has="${x.hasPin ? 1 : ''}" aria-label="${x.no}번"><b>${x.no}</b><span>번</span></button>`).join('')
+      : '<p class="muted" style="grid-column:1/-1">아직 명단이 없어요. 선생님께 말씀드려요.</p>';
+    step('stList', keepMsg);
+  }
+  function pick(b) {
+    pickNo = Number(b.dataset.no); pickHas = !!b.dataset.has;
+    $('pinWho').textContent = pickNo + '번';
+    $('pinHelp').innerHTML = pickHas ? '내 비밀번호를 넣어 주세요.' : '처음이에요! 나만 아는 비밀번호 숫자 4자리를 정해 주세요.<br>친구에게 알려 주지 마세요.';
+    $('pinLabel').textContent = pickHas ? '비밀번호 (숫자 4자리)' : '새 비밀번호 (숫자 4자리)';
+    $('pin2Wrap').classList.toggle('hidden', pickHas);
+    $('btnPin').textContent = pickHas ? '일기장 펼치기' : '이 비밀번호로 정하기';
+    $('inPin').value = ''; $('inPin2').value = '';
+    step('stPin');
+    $('inPin').focus();
+  }
+  async function enter() {
+    const pin = $('inPin').value.trim();
+    if (!/^\d{4}$/.test(pin)) return errMsg('비밀번호는 숫자 4자리예요.');
+    if (!pickHas && $('inPin2').value.trim() !== pin) return errMsg('두 번 넣은 비밀번호가 달라요.');
+    $('btnPin').disabled = true; busyMsg(pickHas ? '확인하는 중…' : '비밀번호를 정하는 중…');
+    const cred = { room: roomCode, no: pickNo, pin };
+    const j = await call(pickHas ? 'sLogin' : 'sSetPin', cred);
+    $('btnPin').disabled = false;
+    if (!j.ok) {
+      if (j.code === 'HASPIN') { await loadRoster(true); return errMsg('이 번호는 이미 비밀번호가 있어요. 내 번호가 맞다면 선생님께 말씀드려요.'); }
+      if (j.code === 'NOPIN') { const b = document.querySelector(`#roster button[data-no="${pickNo}"]`); if (b) { b.dataset.has = ''; pick(b); } return errMsg('비밀번호를 새로 정해 주세요.'); }
+      $('inPin').value = ''; $('inPin2').value = '';
+      return errMsg(j.error);
+    }
+    me = cred; store.set(KEY, me); errMsg('');
+    $('inPin').value = ''; $('inPin2').value = '';
+    if (!j.pen) return show('vPen');
+    start();
+  }
+  async function setPen() {
+    const pen = $('inPen').value.trim();
+    if (!/^[가-힣A-Za-z0-9]{2,8}$/.test(pen)) return ($('penMsg').textContent = '한글·영어·숫자 2~8자로, 띄어쓰기 없이 써 주세요.');
+    $('btnPen').disabled = true; $('penMsg').className = 'msg ok'; $('penMsg').innerHTML = '<span class="spin"></span> 저장하는 중…';
+    const j = await call('sSetPen', { pen });
+    $('btnPen').disabled = false; $('penMsg').className = 'msg';
+    if (!j.ok) return ($('penMsg').textContent = j.error);
+    start();
+  }
+  function logout(e) { if (e) e.preventDefault(); if (!confirm('이 기기에서 나갈까요? 번호와 비밀번호를 넣으면 다시 들어올 수 있어요.')) return; const r = me && me.room; store.set(KEY, null); me = null; home = null; show('vEnter'); if (r) { $('inRoom').value = r; loadRoster(); } else step('stRoom'); }
+
+  /* ---------- 앱 ---------- */
+  async function start() {
+    show('vApp');
+    $('tRecv').innerHTML = '<div class="empty"><span class="spin"></span><br>일기장을 펼치는 중…</div>';
+    const ok = await load();
+    go(tab);
+    if (ok && !store.get(meKey('guide'))) openGuide();
+  }
+  async function load() {
+    const j = await call('sHome');
+    if (!j.ok) {
+      if (unauthorized(j)) { const r = me && me.room; store.set(KEY, null); me = null; show('vEnter'); if (r) { $('inRoom').value = r; await loadRoster(); } errMsg(j.code === 'LOCKED' ? j.error : '다시 들어와 주세요. 비밀번호를 잊어버렸다면 선생님께 말씀드려요.'); return false; }
+      toast(j.error); return false;
+    }
+    if (!j.pen) { show('vPen'); return false; }
+    home = j;
+    $('whoPen').textContent = j.pen; $('whoRoom').textContent = j.roomName;
+    badges();
+    return true;
+  }
+  function badges() {
+    const b = (id, n) => { const prev = Number($(id).textContent) || 0; $(id).textContent = n; $(id).classList.toggle('hidden', !n); if (n > prev) anim($(id), 'bump'); };
+    b('bDraw', home.tickets.length);
+    const seen = store.get('diary:seenRecv') || [];
+    b('bRecv', home.received.filter(r => seen.indexOf(r.drawId) < 0).length);
+    const seenD = store.get('diary:seenMine') || {};
+    b('bMine', home.diaries.filter(d => d.status !== 'pending' && seenD[d.id] !== d.status).length);
+  }
+  const TITLES = { tRecv: '받은 일기', tDraw: '쪽지 뽑기', tWrite: '오늘의 일기', tMine: '내 일기' };
+  const ORDER = ['tRecv', 'tDraw', 'tWrite', 'tMine'];
+  function anim(el, cls) { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); el.addEventListener('animationend', () => el.classList.remove(cls), { once: true }); }
+  function go(t) {
+    const dir = ORDER.indexOf(t) >= ORDER.indexOf(tab) ? 'in-r' : 'in-l';
+    const changed = t !== tab;
+    tab = t;
+    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    document.querySelectorAll('.pane').forEach(p => p.classList.toggle('hidden', p.id !== t));
+    $('title').textContent = TITLES[t];
+    if (!home) return;
+    if (t === 'tRecv') renderRecv();
+    if (t === 'tDraw') renderDraw();
+    if (t === 'tWrite') renderWrite();
+    if (t === 'tMine') renderMine();
+    if (changed) anim($(t), dir);
+    scrollTo(0, 0);
+  }
+
+  /* ---------- 안내 · 약속 ---------- */
+  const ICON = {
+    pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>',
+    ticket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v8a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2z"/><path d="M9 6v12" stroke-dasharray="2 2"/></svg>',
+    slip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M5 12h14M9 2h6"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1L3.2 9.4l6.1-.8z"/></svg>'
+  };
+  const GUIDE = [
+    ['pen', '#E6F1EE', '#3D6B66', '일기를 쓰면 선생님이 먼저 읽어요', '일주일에 2편까지 쓸 수 있어요. 선생님이 읽어 보고 다른 학교로 보내 줘요.'],
+    ['ticket', '#FFF4C7', '#8a6500', '확인을 받으면 뽑기권이 생겨요', '일기 한 편에 뽑기권 1장! 뽑기권은 7일 안에 써야 해요.'],
+    ['slip', '#DCE3F6', '#2B3570', '쪽지를 뽑으면 일기가 펼쳐져요', '다른 학교 친구의 일기를 읽을 수 있어요. 내 일기도 다른 학교 친구가 뽑아 읽어요.'],
+    ['star', '#F7C9C0', '#6B2A20', '스티커로 마음을 전해요', '읽은 일기에 스티커를 붙여 주세요. 받은 일기는 7일 동안 볼 수 있어요.']
+  ];
+  const RULES = [
+    '내 이름, 학교, 사는 동네, 전화번호, SNS 아이디는 쓰지 않아요.',
+    '친구 이야기를 쓸 때는 이름 대신 "친구", "짝꿍"처럼 써요.',
+    '다른 사람을 놀리거나 흉보는 말은 쓰지 않아요.',
+    '받는 친구가 읽고 기분 좋을 이야기를 써요. 궁금한 것을 물어봐도 좋아요.',
+    '힘든 일이나 고민도 써도 괜찮아요. 선생님이 먼저 읽고 함께 마음을 살펴요. 혼자 감당하기 어려운 일은 선생님께 직접 말해도 좋아요.'
+  ];
+  const meKey = k => 'diary:' + k + ':' + (me ? me.room + ':' + me.no : '');
+  const rulesHTML = () => RULES.map((r, i) => `<li><b>${i + 1}</b><span>${esc(r)}</span></li>`).join('');
+  let gIdx = 0;
+  function openGuide() { gIdx = 0; renderGuide(); $('guide').classList.remove('hidden'); anim($('guide').querySelector('.note'), 'pop-in'); $('gNext').focus(); }
+  function renderGuide() {
+    const [ic, bg, fg, t, d] = GUIDE[gIdx];
+    $('gCard').innerHTML = `<div class="ic" style="background:${bg};color:${fg}">${ICON[ic]}</div><h2 id="gTitle">${esc(t)}</h2><p>${esc(d)}</p>`;
+    $('gDots').innerHTML = GUIDE.map((_, i) => `<i class="${i === gIdx ? 'on' : ''}"></i>`).join('');
+    $('gPrev').style.visibility = gIdx ? 'visible' : 'hidden';
+    $('gNext').textContent = gIdx === GUIDE.length - 1 ? '시작하기' : '다음';
+  }
+  function guideNext() {
+    if (gIdx < GUIDE.length - 1) { gIdx++; renderGuide(); return anim($('gCard'), 'in-r'); }
+    $('guide').classList.add('hidden'); store.set(meKey('guide'), 1);
+  }
+  function needPromise() { return !store.get(meKey('promise')); }
+  function openPromise() { $('promiseList').innerHTML = rulesHTML(); $('promise').classList.remove('hidden'); anim($('promise').querySelector('.note'), 'pop-in'); }
+
+  /* ---------- 받은 일기 ---------- */
+  function renderRecv() {
+    const list = home.received;
+    if (!list.length) {
+      $('tRecv').innerHTML = `<div class="note">${holes(4)}<div class="empty"><div class="hand">아직 받은 일기가 없어요</div>일기를 써서 선생님 확인을 받으면<br>쪽지 뽑기권이 생겨요.</div>
+        <button class="btn" data-go="${home.tickets.length ? 'tDraw' : 'tWrite'}">${home.tickets.length ? '쪽지 뽑으러 가기' : '일기 쓰러 가기'}</button></div>`;
+      return;
+    }
+    if (recvIdx >= list.length) recvIdx = 0;
+    const r = list[recvIdx];
+    const seen = store.get('diary:seenRecv') || []; if (seen.indexOf(r.drawId) < 0) { seen.push(r.drawId); store.set('diary:seenRecv', seen.slice(-50)); badges(); }
+    const st = r.sticker && STK_COLORS[r.sticker];
+    $('tRecv').innerHTML = `
+      <div class="muted" style="display:flex;justify-content:space-between"><span>${recvIdx + 1} / ${list.length}</span><span>${daysLeft(r.expiresAt)}일 동안 볼 수 있어요</span></div>
+      <div class="note ruled reveal" style="background-position:0 66px;min-height:420px">
+        ${holes(8)}
+        <div class="tape" style="left:110px;background:rgba(240,170,150,.75);transform:rotate(-4deg)"></div>
+        <div class="meta"><span>${esc(fmtDate(r.writtenAt))}${r.weather ? ' · ' + esc(r.weather) : ''}</span><span>from. ${esc(r.pen)}</span></div>
+        <p class="dtext">${esc(r.text)}</p>
+        ${st ? `<div class="stuck" style="background:${st[0]};color:${st[1]}">${esc(r.sticker)}</div>` : ''}
+      </div>
+      <div class="field"><label>스티커 붙여 주기 (한 번 더 누르면 떼요)</label>
+        <div class="stickers">${home.stickers.map(s => `<button class="stk${r.sticker === s ? ' on' : ''}" data-stk="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>
+      ${list.length > 1 ? `<div style="display:flex;gap:10px">
+        <button class="btn line" data-nav="-1" aria-label="이전 일기" style="flex:1">이전</button>
+        <button class="btn line" data-nav="1" aria-label="다음 일기" style="flex:1">다음</button></div>` : ''}`;
+  }
+  async function react(s) {
+    const r = home.received[recvIdx];
+    const next = r.sticker === s ? '' : s;
+    const prev = r.sticker; r.sticker = next; renderRecv();
+    const j = await call('sReact', { drawId: r.drawId, sticker: next });
+    if (!j.ok) { r.sticker = prev; renderRecv(); toast(j.error); }
+  }
+
+  /* ---------- 쪽지 뽑기 ---------- */
+  function renderDraw() {
+    const tk = home.tickets;
+    let h = `<div class="ticket"><b>뽑기권 ${tk.length}장</b><span class="muted">${tk.length ? tk.map(t => daysLeft(t.expiresAt) + '일').join(' · ') + ' 남음' : '일기를 쓰면 생겨요'}</span></div>`;
+    if (!tk.length) {
+      h += `<div class="note">${holes(4)}<div class="empty"><div class="hand">뽑기권이 없어요</div>일기를 써서 선생님 확인을 받으면<br>뽑기권이 1장 생겨요.</div><button class="btn" data-go="tWrite">일기 쓰러 가기</button></div>`;
+    } else if (!home.pool) {
+      h += `<div class="note">${holes(4)}<div class="empty"><div class="hand">아직 도착한 쪽지가 없어요</div>다른 학교 친구들이 일기를 쓰고 있어요.<br>뽑기권은 그대로 남아 있으니 조금 뒤에 다시 와 주세요.</div><button class="btn line" data-reload>다시 보기</button></div>`;
+    } else {
+      h += `<p class="muted" style="margin:0">다른 학교 친구의 일기가 접혀 있어요. 하나를 골라 보세요.</p>
+        <div class="board" id="board">
+          ${[0, 1, 2].map(i => `<button class="slip s${i}${picked === i ? ' pick' : ' wiggle'}" data-slip="${i}" aria-label="${i + 1}번째 쪽지 고르기" style="animation-delay:${i * .3}s"><span class="tp"></span></button>`).join('')}
+          <div class="ask"><span>${picked < 0 ? '어떤 쪽지가 좋을까?' : '이 쪽지로 할까?'}</span>
+          <button class="btn" id="btnOpen" ${picked < 0 ? 'disabled' : ''} style="width:220px">테이프 떼고 펼치기</button></div>
+        </div>`;
+    }
+    $('tDraw').innerHTML = h;
+  }
+  function sparkle(box, from) {
+    const b = box.getBoundingClientRect(), f = from.getBoundingClientRect();
+    const cx = f.left - b.left + f.width / 2, cy = f.top - b.top + f.height / 2;
+    const colors = ['#F2B544', '#F7C9C0', '#BFE3C8', '#CFD6F5', '#FFE29A'];
+    for (let i = 0; i < 18; i++) {
+      const sp = document.createElement('span'); sp.className = 'spark';
+      const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 90;
+      sp.style.left = cx + 'px'; sp.style.top = cy + 'px'; sp.style.background = colors[i % colors.length];
+      sp.style.setProperty('--dx', Math.cos(a) * d + 'px'); sp.style.setProperty('--dy', Math.sin(a) * d + 'px');
+      sp.style.animationDelay = (Math.random() * 120) + 'ms';
+      box.appendChild(sp); setTimeout(() => sp.remove(), 1100);
+    }
+  }
+  async function openSlip() {
+    if (drawing || picked < 0) return;
+    drawing = true;
+    const slips = [...document.querySelectorAll('.slip')];
+    slips.forEach((s, i) => { s.disabled = true; s.classList.remove('wiggle'); if (i !== picked) s.classList.add('gone'); });
+    $('btnOpen').disabled = true; $('btnOpen').innerHTML = '<span class="spin"></span>';
+    const sel = slips[picked];
+    sel.classList.add('peel');
+    const j = await call('sDraw');
+    if (!j.ok) {
+      drawing = false; picked = -1; toast(j.error); await load(); renderDraw(); return;
+    }
+    sel.classList.add('open');
+    sparkle($('board'), sel);
+    // 화면 전체를 다시 받지 않고 받은 일기를 바로 끼워 넣기 (서버 왕복 한 번 줄이기)
+    home.received.unshift(j.diary);
+    home.tickets.shift();
+    home.pool = Math.max(0, (home.pool || 1) - 1);
+    await new Promise(r => setTimeout(r, 650));
+    drawing = false; picked = -1;
+    recvIdx = 0;
+    badges();
+    go('tRecv');
+    setTimeout(() => { if (!drawing) load(); }, 1500);
+  }
+
+  /* ---------- 쓰기 ---------- */
+  function countLen(text) {
+    let t = String(text);
+    try { t = t.replace(/\p{Extended_Pictographic}/gu, ''); } catch (e) {}
+    return t.replace(/[ㄱ-ㅎㅏ-ㅣ]/g, '').replace(/(.)\1{2,}/g, '$1').replace(/[\s~!.,?…·\-_=+*^]/g, '').length;
+  }
+  function localBlocks(text) {
+    const f = [], compact = text.toLowerCase().replace(/[\s\-.·_]/g, '');
+    if (/(^|[^\d])0(?:[\s\-.·_)]*\d){8,}/.test(text)) f.push('전화번호');
+    if (/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/.test(text)) f.push('이메일');
+    if (/https?:\/\/|www\.|\.(com|net|kr|io|me|ly)\b/i.test(text)) f.push('인터넷 주소');
+    if (/@\s*[A-Za-z0-9_.]{3,}/.test(text)) f.push('@아이디');
+    return f;
+  }
+  let checkTimer = null, lastBlocks = [];
+  function renderWrite() {
+    $('tipsList').innerHTML = rulesHTML();
+    if (needPromise() && $('guide').classList.contains('hidden') && home.weekUsed < home.weekLimit) openPromise();
+    const left = home.weekLimit - home.weekUsed;
+    $('wDate').textContent = fmtDate(Date.now());
+    $('wCount').textContent = '이번 주 ' + home.weekUsed + ' / ' + home.weekLimit + '편';
+    const d = store.get(DRAFT);
+    if (d && !$('wText').value) { $('wText').value = d.text || ''; weather = d.weather || ''; }
+    document.querySelectorAll('#wWeather button').forEach(b => b.classList.toggle('on', b.dataset.w === weather));
+    const done = left <= 0;
+    $('wDone').classList.toggle('hidden', !done);
+    $('wForm').classList.toggle('hidden', done);
+    if (done) {
+      const mon = new Date(); mon.setDate(mon.getDate() + ((8 - mon.getDay()) % 7 || 7));
+      $('wDoneTxt').innerHTML = `일주일에 ${home.weekLimit}편까지 쓸 수 있어요.<br><b>${mon.getMonth() + 1}월 ${mon.getDate()}일 월요일</b>부터 또 쓸 수 있어요.<br>반려된 일기는 편수에 들어가지 않아요.`;
+    }
+    $('wText').disabled = done;
+    updateLen();
+  }
+  function grow() { const t = $('wText'); t.style.height = 'auto'; t.style.height = Math.max(360, Math.ceil(t.scrollHeight / 36) * 36) + 'px'; }
+  function updateLen() {
+    grow();
+    if (!home) return;
+    const text = $('wText').value, n = countLen(text), mn = home.minLen, mx = home.maxLen;
+    $('wLen').textContent = n + '자';
+    const bar = $('wBar');
+    bar.style.width = Math.min(100, n / mn * 100) + '%';
+    bar.className = n > mx ? 'over' : n >= mn ? 'full' : '';
+    $('wNeed').textContent = n > mx ? mx + '자까지 쓸 수 있어요' : n >= mn ? (weather ? '보낼 수 있어요!' : '오늘 날씨도 골라 주세요') : mn + '자부터 보낼 수 있어요';
+    lastBlocks = localBlocks(text);
+    showWarn(lastBlocks, null);
+    $('btnSend').disabled = !(n >= mn && n <= mx && !lastBlocks.length && home.weekUsed < home.weekLimit && weather);
+    store.set(DRAFT, { text, weather });
+    clearTimeout(checkTimer);
+    if (n >= 20) checkTimer = setTimeout(async () => {
+      const j = await call('sCheck', { text });
+      if (j.ok && $('wText').value === text) showWarn(j.blocks, j.flags);
+    }, 1500);
+  }
+  function showWarn(blocks, flags) {
+    const w = $('wWarn');
+    let h = '';
+    if (blocks && blocks.length) h += `<div class="warn block">보낼 수 없는 내용이 있어요: <b>${blocks.map(esc).join(', ')}</b><br>지우고 다시 써 주세요.</div>`;
+    else if (flags && flags.length) h += `<div class="warn check">학교나 동네, 연락처를 알 수 있는 말은 선생님이 한 번 더 살펴봐요.</div>`;
+    if (flags !== null || (blocks && blocks.length) || !h) { w.innerHTML = h; w.classList.toggle('hidden', !h); }
+  }
+  async function send() {
+    if (!weather) return ($('wMsg').textContent = '오늘 날씨를 골라 주세요.');
+    $('btnSend').disabled = true; $('wMsg').className = 'msg ok'; $('wMsg').innerHTML = '<span class="spin"></span> 선생님께 보내는 중…';
+    const j = await call('sWrite', { text: $('wText').value, weather });
+    if (!j.ok) { $('wMsg').className = 'msg'; $('wMsg').textContent = j.error; $('btnSend').disabled = false; return; }
+    home = j;
+    $('wMsg').className = 'msg ok'; $('wMsg').textContent = '';
+    const note = document.querySelector('#tWrite .note');
+    note.classList.add('folding');
+    const pl = document.createElement('div'); pl.className = 'plane';
+    pl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L2 10l7 3 3 7z" fill="#FFFCF3"/><path d="M22 2L9 13"/></svg>';
+    setTimeout(() => document.body.appendChild(pl), 350);
+    await new Promise(r => setTimeout(r, 1150));
+    pl.remove(); note.classList.remove('folding');
+    $('wText').value = ''; weather = ''; store.set(DRAFT, null);
+    badges();
+    toast('선생님께 보냈어요! 확인을 받으면 뽑기권이 생겨요.');
+    go('tMine');
+  }
+
+  /* ---------- 내 일기 ---------- */
+  function diff(a, b) {
+    const A = a.split(/(\s+)/), B = b.split(/(\s+)/), n = A.length, m = B.length;
+    if (n * m > 400000) return esc(b);
+    const L = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    let i = 0, j = 0, out = '';
+    while (i < n && j < m) {
+      if (A[i] === B[j]) { out += esc(A[i]); i++; j++; }
+      else if (L[i + 1][j] >= L[i][j + 1]) { out += A[i].trim() ? '<del>' + esc(A[i]) + '</del>' : esc(A[i]); i++; }
+      else { out += B[j].trim() ? '<ins>' + esc(B[j]) + '</ins>' : esc(B[j]); j++; }
+    }
+    while (i < n) { out += A[i].trim() ? '<del>' + esc(A[i]) + '</del>' : esc(A[i]); i++; }
+    while (j < m) { out += B[j].trim() ? '<ins>' + esc(B[j]) + '</ins>' : esc(B[j]); j++; }
+    return out;
+  }
+  function renderMine() {
+    const list = home.diaries;
+    const seenD = store.get('diary:seenMine') || {};
+    list.forEach(d => { if (d.status !== 'pending') seenD[d.id] = d.status; });
+    store.set('diary:seenMine', seenD); badges();
+    const penCard = `<div class="card" id="penCard">
+      <div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="muted">내 필명</span><span class="hand" style="font-size:24px;color:var(--ink)">${esc(home.pen)}</span><button class="btn line small" id="btnPenEdit" style="height:40px;font-size:17px">바꾸기</button></div>
+      <div id="penEdit" class="hidden" style="display:flex;flex-direction:column;gap:8px">
+        <div class="field"><label for="inPenNew">새 필명 (한글·영어·숫자 2~8자)</label><input id="inPenNew" maxlength="8" autocomplete="off" style="text-transform:none;letter-spacing:0" value="${esc(home.pen)}"></div>
+        <p class="muted" style="margin:0">이미 다른 학교 친구에게 간 일기는 쓸 때의 필명 그대로 남고, 앞으로 쓰는 일기부터 새 필명이 붙어요.</p>
+        <p class="msg" id="penEditMsg"></p>
+        <div style="display:flex;gap:8px"><button class="btn small" id="btnPenSave" style="flex:1">바꾸기</button><button class="btn line small" id="btnPenCancel" style="flex:1">그만두기</button></div>
+      </div></div>`;
+    if (!list.length) { $('tMine').innerHTML = penCard + `<div class="note">${holes(4)}<div class="empty"><div class="hand">아직 쓴 일기가 없어요</div>첫 일기를 써 볼까요?</div><button class="btn" data-go="tWrite">일기 쓰러 가기</button></div>`; return; }
+    $('tMine').innerHTML = penCard + `<div class="card" style="margin-top:14px">${list.map(d => {
+      let chip, more = '';
+      if (d.status === 'pending') chip = '<span class="chip wait">선생님 확인 중</span>';
+      else if (d.status === 'deleted') { chip = '<span class="chip" style="background:#ECEFEE;color:#4a5f5b">선생님이 내렸어요</span>'; more = '<div class="warn check">이 일기는 쪽지함에서 빠졌어요. 궁금하면 선생님께 여쭤봐요.</div>'; }
+      else if (d.status === 'rejected') { chip = '<span class="chip no">다시 써 볼까요?</span>'; more = `<div class="warn block">선생님: ${esc(d.reason)}<br>이 일기는 이번 주 편수에 들어가지 않아요.</div>`; }
+      else {
+        const st = Object.keys(d.stickers || {}).map(k => `<span class="chip" style="background:${STK_COLORS[k] ? STK_COLORS[k][0] : '#eee'};color:${STK_COLORS[k] ? STK_COLORS[k][1] : '#333'}">${esc(k)} ${d.stickers[k]}</span>`).join(' ');
+        chip = d.readers ? `<span class="chip okay">${d.readers}명이 뽑았어요</span>` : '<span class="chip okay">쪽지함에서 기다리는 중</span>';
+        more = (st ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${st}</div>` : '') + (d.edited ? '<div class="warn check">선생님이 조금 고쳐서 보냈어요. 아래에서 고친 곳을 볼 수 있어요.</div>' : '');
+      }
+      const body = d.edited ? diff(d.original, d.text) : esc(d.text);
+      return `<div class="mine"><div class="row"><span>${esc(fmtDate(d.createdAt))}${d.weather ? ' · ' + esc(d.weather) : ''}</span>${chip}</div>${more}
+        <details><summary>${d.edited ? '고친 곳 보기' : '내가 쓴 일기 보기'}</summary><div class="body">${body}</div></details></div>`;
+    }).join('')}</div>` + (home.weekUsed < home.weekLimit ? `<button class="btn" data-go="tWrite" style="margin-top:14px;width:100%">일기 쓰러 가기 (이번 주 ${home.weekUsed}/${home.weekLimit}편)</button>` : `<p class="muted" style="text-align:center;margin:14px 0 0">이번 주 ${home.weekLimit}편을 다 썼어요. 다음 주 월요일에 또 써요!</p>`);
+  }
+
+  async function changePen() {
+    if (!home) return;
+    const pen = $('inPenNew').value.trim();
+    if (pen === home.pen) return renderMine();
+    if (!/^[가-힣A-Za-z0-9]{2,8}$/.test(pen)) return ($('penEditMsg').textContent = '한글·영어·숫자 2~8자로, 띄어쓰기 없이 써 주세요.');
+    const b = $('btnPenSave'); b.disabled = true; $('penEditMsg').className = 'msg ok'; $('penEditMsg').innerHTML = '<span class="spin"></span>';
+    const j = await call('sSetPen', { pen });
+    if (!j.ok) { b.disabled = false; $('penEditMsg').className = 'msg'; return ($('penEditMsg').textContent = j.error); }
+    home.pen = j.pen; $('whoPen').textContent = j.pen;
+    toast('필명을 ' + j.pen + '(으)로 바꿨어요.');
+    renderMine();
+  }
+
+  /* ---------- 이벤트 ---------- */
+  document.addEventListener('click', e => {
+    const t = e.target.closest('button, a');
+    if (!t) return;
+    if (t.dataset.no) return pick(t);
+    if (t.dataset.back) { if (t.dataset.back === 'stList') return loadRoster(); return step(t.dataset.back); }
+    if (t.dataset.go) return go(t.dataset.go);
+    if (t.id === 'btnHelp') return openGuide();
+    if (t.id === 'gNext') return guideNext();
+    if (t.id === 'gPrev') { if (gIdx) gIdx--; renderGuide(); return anim($('gCard'), 'in-l'); }
+    if (t.id === 'btnPromise') { store.set(meKey('promise'), 1); $('promise').classList.add('hidden'); return $('wText').focus(); }
+    if (t.id === 'btnPromiseLater') { $('promise').classList.add('hidden'); return go('tRecv'); }
+    if (t.id === 'btnPenEdit') { $('penEdit').classList.remove('hidden'); t.classList.add('hidden'); return $('inPenNew').focus(); }
+    if (t.id === 'btnPenCancel') return renderMine();
+    if (t.id === 'btnPenSave') return changePen();
+    if (t.dataset.t) { if (t.dataset.t === tab) { load().then(() => go(tab)); } else go(t.dataset.t); return; }
+    if (t.dataset.stk !== undefined) return react(t.dataset.stk);
+    if (t.dataset.nav) { recvIdx = (recvIdx + Number(t.dataset.nav) + home.received.length) % home.received.length; renderRecv(); return anim(document.querySelector('#tRecv .note'), Number(t.dataset.nav) > 0 ? 'flip-r' : 'flip-l'); }
+    if (t.dataset.slip !== undefined) { if (drawing) return; picked = Number(t.dataset.slip); return renderDraw(); }
+    if (t.id === 'btnOpen') return openSlip();
+    if (t.hasAttribute('data-reload')) return load().then(() => go('tDraw'));
+    if (t.dataset.w) { weather = t.dataset.w; document.querySelectorAll('#wWeather button').forEach(b => b.classList.toggle('on', b === t)); return updateLen(); }
+  });
+  $('btnRoomNext').addEventListener('click', () => loadRoster());
+  $('inRoom').addEventListener('keydown', e => { if (e.key === 'Enter') loadRoster(); });
+  $('btnPin').addEventListener('click', enter);
+  $('inPin').addEventListener('keydown', e => { if (e.key === 'Enter') { if (pickHas) enter(); else $('inPin2').focus(); } });
+  $('inPin2').addEventListener('keydown', e => { if (e.key === 'Enter') enter(); });
+  $('btnPen').addEventListener('click', setPen);
+  $('inPen').addEventListener('keydown', e => { if (e.key === 'Enter') setPen(); });
+  $('btnSend').addEventListener('click', send);
+  $('wText').addEventListener('input', updateLen);
+  $('lnkOut').addEventListener('click', logout);
+  const back = () => { if (!document.hidden && home && !drawing) load().then(ok => { if (ok && tab !== 'tWrite') go(tab); }); };
+  document.addEventListener('visibilitychange', back);
+  addEventListener('focus', back);
+
+  // 주소에 방 코드가 붙어 오면 미리 채우기 (?room=ABCDE)
+  const qr = new URLSearchParams(location.search).get('room') || window.DIARY_ROOM;
+  if (me && !me.no) { store.set(KEY, null); me = null; }
+  if (qr) $('inRoom').value = qr.toUpperCase().slice(0, 5);
+  if (me) start(); else { show('vEnter'); if (qr) loadRoster(); }
+})();
+</script>
+</body>
+</html>

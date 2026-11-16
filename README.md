@@ -7,7 +7,8 @@
 | 파일 | 하는 일 |
 |---|---|
 | `Code.gs` | 서버 (구글 시트 + Apps Script) |
-| `index.html` | 학생 화면 |
+| `index.html` | 메인 화면 (학생·선생님 고르기) |
+| `student.html` | 학생 화면 |
 | `teacher.html` | 교사 화면 (생각 오락실 로그인) |
 | `config.js` | 서버 주소 한 줄 |
 
