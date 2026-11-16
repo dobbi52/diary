@@ -324,7 +324,7 @@ var CHECK_WORDS = ['초등학교', '중학교', '학교 이름', '아파트', '�
 
 function hardBlocks(text) {
   var found = [], low = text.toLowerCase(), compact = low.replace(/[\s\-.·_]/g, '');
-  if (/01[016789][\s\-.]*\d{3,4}[\s\-.]*\d{4}/.test(text) || /\d{7,}/.test(compact)) found.push('전화번호');
+  if (/(^|[^\d])0(?:[\s\-.·_)]*\d){8,}/.test(text)) found.push('전화번호');
   if (/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/.test(text)) found.push('이메일');
   if (/https?:\/\/|www\.|\.(com|net|kr|io|me|ly)\b/i.test(text)) found.push('인터넷 주소');
   if (/@\s*[A-Za-z0-9_.]{3,}/.test(text)) found.push('@아이디');
