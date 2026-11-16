@@ -105,13 +105,13 @@ details.tips .rules{margin-top:10px}
 .badge{position:absolute;top:8px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:#D9573C;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px}
 
 /* 스티커 */
-.stickers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.stk{height:56px;border-radius:16px;border:3px solid #fff;font-family:'Gaegu',cursive;font-weight:700;font-size:16px;box-shadow:0 3px 6px rgba(0,0,0,.12);transition:transform .15s}
-.stk:nth-child(1){background:#F7C9C0;color:#6B2A20;transform:rotate(-5deg)}
-.stk:nth-child(2){background:#FFE29A;color:#5C4300;transform:rotate(3deg)}
-.stk:nth-child(3){background:#BFE3C8;color:#1F5130;transform:rotate(-2deg)}
-.stk:nth-child(4){background:#CFD6F5;color:#2B3570;transform:rotate(6deg)}
-.stk.on{outline:3px solid var(--deep);outline-offset:2px;transform:scale(1.08) rotate(0)}
+.stickers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:6px 4px}
+.stk{height:52px;min-width:0;padding:0 2px;border-radius:14px;border:3px solid #fff;font-family:'Gaegu',cursive;font-weight:700;font-size:16px;white-space:nowrap;box-shadow:0 3px 6px rgba(0,0,0,.12);transition:transform .15s}
+.stk:nth-child(1){background:#F7C9C0;color:#6B2A20;transform:rotate(-2deg)}
+.stk:nth-child(2){background:#FFE29A;color:#5C4300;transform:rotate(1.5deg)}
+.stk:nth-child(3){background:#BFE3C8;color:#1F5130;transform:rotate(-1deg)}
+.stk:nth-child(4){background:#CFD6F5;color:#2B3570;transform:rotate(2deg)}
+.stk.on{box-shadow:0 0 0 3px var(--deep),0 3px 6px rgba(0,0,0,.15);transform:rotate(0)}
 .stuck{position:absolute;right:14px;bottom:14px;transform:rotate(-8deg);border-radius:14px;border:3px solid #fff;padding:6px 10px;font-family:'Gaegu',cursive;font-weight:700;font-size:16px;box-shadow:0 3px 6px rgba(0,0,0,.15);animation:pop .35s ease-out}
 @keyframes pop{0%{transform:scale(.3) rotate(-30deg);opacity:0}100%{transform:scale(1) rotate(-8deg);opacity:1}}
 
@@ -575,17 +575,22 @@ ins{color:#1F5130;background:#DDF0E2;text-decoration:none}
     $('btnOpen').disabled = true; $('btnOpen').innerHTML = '<span class="spin"></span>';
     const sel = slips[picked];
     sel.classList.add('peel');
-    const [j] = await Promise.all([call('sDraw'), new Promise(r => setTimeout(r, 700))]);
+    const j = await call('sDraw');
     if (!j.ok) {
       drawing = false; picked = -1; toast(j.error); await load(); renderDraw(); return;
     }
     sel.classList.add('open');
     sparkle($('board'), sel);
-    await new Promise(r => setTimeout(r, 800));
+    // 화면 전체를 다시 받지 않고 받은 일기를 바로 끼워 넣기 (서버 왕복 한 번 줄이기)
+    home.received.unshift(j.diary);
+    home.tickets.shift();
+    home.pool = Math.max(0, (home.pool || 1) - 1);
+    await new Promise(r => setTimeout(r, 650));
     drawing = false; picked = -1;
-    await load();
-    recvIdx = Math.max(0, home.received.findIndex(r => r.drawId === j.diary.drawId));
+    recvIdx = 0;
+    badges();
     go('tRecv');
+    setTimeout(() => { if (!drawing) load(); }, 1500);
   }
 
   /* ---------- 쓰기 ---------- */
