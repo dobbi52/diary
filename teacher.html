@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>교환일기 승인함 (선생님)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap">
+<script src="config.js"></script>
+<script src="https://dobbi52.github.io/games/arcade-auth.js"></script>
+<style>
+:root{--deep:#3D6B66;--sub:#4a5f5b;--ink:#26324a}
+*{box-sizing:border-box}
+body{margin:0;background:#EEF3F1;color:#24302e;font-family:'Gowun Dodum',sans-serif}
+button,input,textarea,select{font-family:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.wrap{max-width:1240px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:18px}
+h1{margin:0;font-family:'Gaegu',cursive;font-weight:700;font-size:32px}
+h2{margin:0;font-size:18px}
+.sub{font-size:13px;color:var(--sub);line-height:1.6}
+.box{background:#fff;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.narrow{max-width:460px;margin:8vh auto 0;width:100%}
+.btn{height:44px;padding:0 18px;border-radius:10px;border:none;background:var(--deep);color:#fff;font-size:15px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.line{background:transparent;border:1.5px solid var(--deep);color:#2a4b47}
+.btn.warn{background:transparent;border:1.5px solid #B07A10;color:#7A5205}
+.btn.bad{background:transparent;border:1.5px solid #9B3A24;color:#8A2A18}
+.btn.sm{height:34px;padding:0 10px;font-size:13px}
+input[type=text],input[type=number],textarea,select{border:1.5px solid #C9D3D0;border-radius:10px;background:#fff;font-size:15px;padding:10px 12px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--deep)}
+label{font-size:13px;color:var(--sub)}
+.field{display:flex;flex-direction:column;gap:6px}
+.msg{min-height:20px;font-size:14px;color:#9B3A24}
+.msg.ok{color:var(--deep)}
+.head{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.stats{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stat{background:#fff;border-radius:10px;padding:8px 14px;font-size:13px}
+.stat b{font-size:18px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{height:40px;padding:0 16px;border-radius:20px;border:1.5px solid #C9D3D0;background:#fff;color:var(--sub);font-size:14px}
+.tabs button.on{background:var(--deep);border-color:var(--deep);color:#fff}
+.cols{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.list{flex:1 1 300px;max-width:380px;background:#fff;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px;max-height:75vh;overflow-y:auto}
+.item{text-align:left;border:2px solid transparent;background:transparent;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:4px;border-bottom:1px solid #E3E9E7}
+.item.on{background:#E6F1EE;border-color:var(--deep)}
+.item .r1{display:flex;justify-content:space-between;gap:6px;font-size:15px}
+.item .r2{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:var(--sub)}
+.tag{border-radius:6px;padding:0 6px;font-size:12px}
+.tag.care{background:#FBE0DA;color:#8A2A18}
+.tag.check{background:#FFF0B3;color:#5C4300}
+.tag.clean{color:#24663F}
+.tag.edit{background:#E3ECF8;color:#24476E}
+.detail{flex:999 1 560px;min-width:0;background:#FFFCF3;border-radius:12px;box-shadow:0 6px 14px rgba(40,70,65,.12);padding:24px 28px;display:flex;flex-direction:column;gap:16px}
+.dtext{margin:0;font-family:'Gaegu',cursive;font-size:24px;line-height:40px;color:var(--ink);white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+mark{border-radius:4px;padding:0 3px}
+mark.check{background:#FFE58A}
+mark.care{background:#F8B4A6}
+.note{border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6}
+.note.check{background:#FFF7D6;color:#5C4300}
+.note.care{background:#FBE0DA;color:#7A2414}
+.acts{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.editor textarea{width:100%;min-height:260px;font-family:'Gaegu',cursive;font-size:22px;line-height:36px;resize:vertical}
+.empty{text-align:center;color:var(--sub);padding:50px 20px;line-height:1.8}
+table{width:100%;min-width:680px;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #E3E9E7;vertical-align:middle;white-space:nowrap}
+th{font-size:12px;color:var(--sub);font-weight:400}
+.code{font-family:ui-monospace,Menlo,monospace;font-size:16px;letter-spacing:.1em;font-weight:700}
+.tblwrap{overflow-x:auto}
+.done{display:flex;flex-direction:column;gap:6px;padding:14px 0;border-bottom:1px solid #E3E9E7}
+.done .r1{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:14px}
+.done details summary{cursor:pointer;font-size:13px;color:var(--deep)}
+.done .body{margin-top:8px;white-space:pre-wrap;line-height:1.7;font-size:15px;background:#FAF8F2;border-radius:8px;padding:10px}
+del{color:#9B3A24;background:#FBE0DA}
+ins{color:#1F5130;background:#DDF0E2;text-decoration:none}
+.modal{position:fixed;inset:0;background:rgba(30,45,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:60}
+.modal .sheet{background:#fff;border-radius:16px;width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.sheet .sh{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #E3E9E7}
+.sheet .sb{padding:16px 20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:22px;font-size:15px;line-height:1.6}
+.sheet h3{margin:0 0 10px;font-size:16px;color:#2a4b47}
+.sheet ul{margin:0;padding-left:20px}
+.sheet li{margin:2px 0}
+.steps{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.steps div{background:#E6F1EE;color:#2a4b47;border-radius:12px;padding:8px 10px;font-size:13px;font-weight:700;text-align:center;line-height:1.35;min-width:78px}
+.steps div b{display:block;font-size:20px;line-height:1.2}
+.steps div.y{background:#FFF4C7;color:#5C4300}
+.steps i{color:#9AB7B2;font-style:normal;font-weight:700}
+.nums{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.nums div{background:#F4F7F6;border-radius:12px;padding:10px;font-size:13px;color:#4a5f5b;text-align:center;line-height:1.4}
+.nums b{display:block;font-size:22px;white-space:nowrap;color:#2a4b47;font-family:'Gaegu',cursive}
+.btns{display:flex;flex-direction:column;gap:8px}
+.btns div{display:flex;align-items:center;gap:10px;font-size:14px}
+.bx{flex:0 0 110px;text-align:center;border-radius:8px;padding:5px 6px;font-size:13px;font-weight:700}
+.bx.ok{background:#3D6B66;color:#fff}.bx.warn{border:1.5px solid #B07A10;color:#7A5205}.bx.bad{border:1.5px solid #9B3A24;color:#8A2A18}
+.bx.gray{background:#ECEFEE;color:#3c4f4b}.bx.yel{background:#FFE58A;color:#4a3500}.bx.red{background:#FBE0DA;color:#8A2A18}
+.nb{flex:0 0 26px;height:26px;border-radius:50%;background:#3D6B66;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.note1{margin:8px 0 0;font-size:13px;color:#4a5f5b}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes stampIn{0%{opacity:0;transform:translate(-50%,-50%) rotate(-18deg) scale(2.2)}60%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(.95)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
+@keyframes outL{to{opacity:0;transform:translateX(-60px)}}
+@keyframes outUp{to{opacity:0;transform:translateY(-14px) scale(.98)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.94)}100%{opacity:1;transform:none}}
+.fade-up{animation:fadeUp .28s ease-out}
+.out-l{animation:outL .32s ease-in forwards}
+.out-up{animation:outUp .3s ease-in .25s forwards}
+.pop-in{animation:popIn .25s ease-out}
+.detail{position:relative}
+.stamp{position:absolute;left:50%;top:42%;border:5px solid #2E7D4F;color:#2E7D4F;border-radius:14px;padding:6px 22px;font-family:'Gaegu',cursive;font-weight:700;font-size:44px;background:rgba(255,255,255,.75);pointer-events:none;animation:stampIn .35s ease-out forwards;z-index:3}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#26324a;color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;z-index:50}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+#print{display:none}
+@media print{
+  body{background:#fff}
+  .wrap,.toast{display:none!important}
+  #print{display:grid;grid-template-columns:repeat(2,1fr);gap:8mm}
+  .pc{border:1.5px dashed #888;border-radius:6px;padding:6mm;font-size:11pt;break-inside:avoid;line-height:1.6}
+  .pc b{font-size:13pt}
+  .pc .code{font-size:16pt}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 로그인 -->
+  <section id="vLogin" class="box narrow">
+    <h1>교환일기 선생님 방</h1>
+    <p class="sub">생각 오락실 계정으로 로그인해 주세요.</p>
+    <button class="btn" id="btnLogin">생각 오락실 로그인</button>
+    <p class="msg" id="loginMsg"></p>
+  </section>
+
+  <!-- 초대 코드 -->
+  <section id="vInvite" class="box narrow hidden">
+    <h1>교사 확인</h1>
+    <p class="sub"><b id="invNick"></b> 계정으로 로그인했어요.<br>처음 한 번만 교사 초대 코드를 넣어 주세요.</p>
+    <div class="field"><label for="inInvite">교사 초대 코드</label><input type="text" id="inInvite" autocomplete="off" style="text-transform:uppercase"></div>
+    <p class="msg" id="invMsg"></p>
+    <button class="btn" id="btnInvite">확인</button>
+    <button class="btn line" data-logout>다른 계정으로 로그인</button>
+  </section>
+
+  <!-- 방 고르기 -->
+  <section id="vRooms" class="box narrow hidden">
+    <h1>내 교환일기 방</h1>
+    <p class="sub"><b id="roomsNick"></b> 선생님의 방이에요. 방은 선생님만 관리할 수 있어요.</p>
+    <div id="roomList" style="display:flex;flex-direction:column;gap:8px"></div>
+    <h2 style="margin-top:8px">새 방 만들기</h2>
+    <div class="field"><label for="inRName">반 이름</label><input type="text" id="inRName" placeholder="예) 6학년 2반" maxlength="20"></div>
+    <div class="field"><label for="inRCount">학생 수</label><input type="number" id="inRCount" min="1" max="40" value="25"></div>
+    <p class="sub" style="margin:0">학생 이름은 받지 않아요. 1번부터 학생 수만큼 번호가 만들어지고, 학생은 자기 출석 번호로 들어와요.</p>
+    <p class="msg" id="roomMsg"></p>
+    <button class="btn" id="btnRoom">방 만들기</button>
+    <button class="btn line" data-guide="1">교환일기는 이렇게 돌아가요</button>
+    <button class="btn line" data-logout>로그아웃</button>
+  </section>
+
+  <!-- 방 -->
+  <section id="vRoom" class="hidden" style="display:flex;flex-direction:column;gap:18px">
+    <div class="head">
+      <div><h1>교환일기 승인함</h1><span class="sub" id="rTitle"></span></div>
+      <div class="stats">
+        <div class="stat">확인 대기 <b id="sPend" style="color:#9B3A24">0</b></div>
+        <div class="stat">이번 주 승인 <b id="sAppr">0</b></div>
+        <div class="stat" id="sLen"></div>
+        <button class="btn line sm" data-guide="1">운영 안내</button>
+        <button class="btn line sm" id="btnBack">방 목록</button>
+      </div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button data-tab="pPend" class="on">승인함</button>
+      <button data-tab="pDone">처리한 일기</button>
+      <button data-tab="pStud">학생 명단</button>
+      <button data-tab="pSet">설정</button>
+    </div>
+
+    <div id="pPend" class="pane">
+      <div class="cols">
+        <div class="list" id="pList"></div>
+        <div class="detail" id="pDetail"></div>
+      </div>
+    </div>
+
+    <div id="pDone" class="pane hidden"><div class="box" id="doneBox"></div></div>
+
+    <div id="pStud" class="pane hidden" style="display:flex;flex-direction:column;gap:18px">
+      <div class="box">
+        <h2>번호 더하기</h2>
+        <p class="sub">학생은 방 코드를 넣고 자기 출석 번호를 눌러, 처음 한 번 비밀번호 숫자 4자리를 직접 정해요. 전학 온 학생이 있으면 번호를 더해 주세요.</p>
+        <div class="acts"><input type="number" id="inAddCount" min="1" max="40" value="1" style="width:90px" aria-label="더할 인원"><button class="btn" id="btnAdd">명 더하기</button><button class="btn line" id="btnPrint">안내 카드 인쇄</button><span class="msg" id="studMsg"></span></div>
+      </div>
+      <div class="box">
+        <h2>이름 붙이기 <span class="sub" style="font-weight:400">(이 기기에만 저장)</span></h2>
+        <p class="sub">1번부터 차례대로 한 줄에 한 명씩 붙여 넣으면, 선생님 화면에서 "3번 김가나"처럼 보여요. 이름은 서버로 보내지 않고 이 기기 브라우저에만 저장돼요. 다른 기기에서는 번호만 보여요.</p>
+        <textarea id="inNames" rows="5" placeholder="김가나&#10;이다라&#10;박마바"></textarea>
+        <div class="acts"><button class="btn line" id="btnNames">이 기기에 저장</button><button class="btn bad sm" id="btnNamesClear">이름 지우기</button></div>
+      </div>
+      <div class="box">
+        <div class="head"><h2>우리 반 학생</h2><span class="sub" id="studLink"></span></div>
+        <div class="tblwrap"><table><thead><tr><th>번호</th><th>이름</th><th>필명</th><th>비밀번호</th><th>이번 주</th><th></th></tr></thead><tbody id="studBody"></tbody></table></div>
+      </div>
+    </div>
+
+    <div id="pSet" class="pane hidden">
+      <div class="box" style="max-width:520px">
+        <h2>방 설정</h2>
+        <div class="field"><label for="setName">반 이름</label><input type="text" id="setName" maxlength="20"></div>
+        <div style="display:flex;gap:12px">
+          <div class="field" style="flex:1"><label for="setMin">최소 글자 수</label><input type="number" id="setMin" min="30" max="1000"></div>
+          <div class="field" style="flex:1"><label for="setMax">최대 글자 수</label><input type="number" id="setMax" min="80" max="2000"></div>
+        </div>
+        <p class="sub">띄어쓰기, 이모티콘, ㅋㅋ 같은 낱자, 같은 글자 반복은 글자 수에 넣지 않아요.</p>
+        <p class="msg" id="setMsg"></p>
+        <button class="btn" id="btnSet">저장</button>
+      </div>
+    </div>
+  </section>
+</div>
+<div id="print"></div>
+<div class="modal hidden" id="tGuide" role="dialog" aria-modal="true" aria-labelledby="tgTitle">
+  <div class="sheet">
+    <div class="sh"><h2 id="tgTitle" style="font-family:'Gaegu',cursive;font-size:24px;line-height:1.2">교환일기 운영 안내</h2><button class="btn sm" data-guideclose="1" style="flex-shrink:0;white-space:nowrap">닫기</button></div>
+    <div class="sb">
+      <section>
+        <h3>① 이렇게 흘러가요</h3>
+        <div class="steps">
+          <div><b>✎</b>학생이<br>일기 쓰기</div><i>→</i>
+          <div class="y"><b>✓</b>선생님<br>승인</div><i>→</i>
+          <div><b>▭</b>뽑기권<br>1장</div><i>→</i>
+          <div><b>✉</b>다른 반 일기<br>뽑아 읽기</div><i>→</i>
+          <div><b>★</b>스티커<br>붙이기</div>
+        </div>
+        <p class="note1">우리 반 일기는 우리 반 학생에게 가지 않아요.</p>
+      </section>
+      <section>
+        <h3>② 숫자로 보는 규칙</h3>
+        <div class="nums">
+          <div><b>2편</b>한 주에 쓰는 일기</div>
+          <div><b>150~800</b>글자 수 (설정에서 변경)</div>
+          <div><b>7일</b>뽑기권 기한</div>
+          <div><b>2명</b>한 편을 읽는 최대 인원</div>
+          <div><b>7일</b>받은 일기 보관</div>
+        </div>
+      </section>
+      <section>
+        <h3>③ 승인함 버튼</h3>
+        <div class="btns">
+          <div><span class="bx ok">승인하기</span>그대로 보내요</div>
+          <div><span class="bx warn">가리기·고치기</span>고친 곳이 학생에게 보여요</div>
+          <div><span class="bx bad">반려</span>학생이 사유 보고 다시 써요</div>
+        </div>
+      </section>
+      <section>
+        <h3>④ 자동 표시</h3>
+        <div class="btns">
+          <div><span class="bx gray">바로 막힘</span>전화번호·이메일·주소·욕설</div>
+          <div><span class="bx yel">노란 칠</span>학교·동네·SNS 같은 말</div>
+          <div><span class="bx red">마음 살피기</span>따로 이야기 나눠 주세요</div>
+        </div>
+      </section>
+      <section>
+        <h3>⑤ 처음 시작할 때</h3>
+        <div class="btns">
+          <div><span class="nb">1</span>방 만들기 (반 이름, 학생 수)</div>
+          <div><span class="nb">2</span>방 코드 알려 주기 (안내 카드 인쇄)</div>
+          <div><span class="nb">3</span>첫 시간에 다 같이 비밀번호·필명 정하기</div>
+        </div>
+        <p class="note1">비밀번호 초기화, 필명 바꾸기, 이름 붙이기는 학생 명단 탭에서 해요.</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const API = window.DIARY_API;
+  const $ = id => document.getElementById(id);
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let acc = null, room = null, roomData = null, pending = [], sel = null, editing = false, tab = 'pPend';
+  const REASONS = ['개인 정보가 들어 있어요. 학교나 동네, 연락처를 빼고 다시 써 볼까요?', '조금 더 자세히 써 볼까요?', '친구를 속상하게 할 수 있는 말이 있어요.', '일기 주제와 맞지 않아요.'];
+
+  async function call(action, data) {
+    if (!API || API.indexOf('http') !== 0) return { ok: false, error: 'config.js에 서버 주소를 먼저 넣어 주세요.' };
+    const a = window.ArcadeAuth && ArcadeAuth.get();
+    let last;
+    for (let k = 0; k < 3; k++) {
+      try {
+        const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action, nick: a && a.nick, pin: a && a.pin, room: room && room.code }, data || {})) });
+        const j = await r.json();
+        if (j.ok || j.code !== 'BUSY') return j;
+        last = j;
+      } catch (e) { last = { ok: false, error: '연결하지 못했어요. 인터넷을 확인해 주세요.' }; }
+      await new Promise(r => setTimeout(r, 700 * (k + 1)));
+    }
+    return last;
+  }
+  function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+  function show(v) { ['vLogin', 'vInvite', 'vRooms', 'vRoom'].forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+  const fmt = t => { const d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  function busy(btn, on, label) { btn.disabled = on; if (on) { btn.dataset.l = btn.innerHTML; btn.innerHTML = '<span class="spin"></span> ' + (label || ''); } else if (btn.dataset.l) btn.innerHTML = btn.dataset.l; }
+
+  /* ---------- 로그인 ---------- */
+  async function boot() {
+    acc = ArcadeAuth.get();
+    if (!acc) return show('vLogin');
+    $('loginMsg').className = 'msg ok'; $('loginMsg').innerHTML = '<span class="spin"></span> 확인하는 중…'; show('vLogin');
+    const j = await call('tLogin');
+    $('loginMsg').className = 'msg'; $('loginMsg').textContent = '';
+    if (!j.ok) { if (j.code === 'AUTH') ArcadeAuth.logout(); $('loginMsg').textContent = j.error; return show('vLogin'); }
+    if (!j.teacher) { $('invNick').textContent = j.nick; return show('vInvite'); }
+    showRooms(j);
+  }
+  function showRooms(j) {
+    if (!lsGet('diary:tGuide')) setTimeout(openGuide, 300);
+    $('roomsNick').textContent = j.nick;
+    $('roomList').innerHTML = j.rooms.length ? j.rooms.map(r => `<button class="btn line" style="height:56px;justify-content:space-between;display:flex;align-items:center" data-room='${esc(JSON.stringify(r))}'><span>${esc(r.name)}</span><span class="code">${esc(r.code)}</span></button>`).join('') : '<p class="sub">아직 만든 방이 없어요.</p>';
+    show('vRooms');
+    const last = lsGet('diary:tRoom');
+    const hit = (last && j.rooms.find(r => r.code === last)) || (j.rooms.length === 1 ? j.rooms[0] : null);
+    if (hit && !room) openRoom(hit);
+  }
+  async function invite() {
+    const b = $('btnInvite'); busy(b, true, '확인 중');
+    const j = await call('tRegister', { invite: $('inInvite').value.trim() });
+    busy(b, false);
+    if (!j.ok) return ($('invMsg').textContent = j.error);
+    showRooms(j);
+  }
+  async function createRoom() {
+    const b = $('btnRoom'); busy(b, true, '만드는 중');
+    const j = await call('tCreateRoom', { name: $('inRName').value, count: Number($('inRCount').value) });
+    busy(b, false);
+    if (!j.ok) return ($('roomMsg').textContent = j.error);
+    $('inRName').value = '';
+    openRoom(j.room);
+    go('pStud');
+  }
+
+  /* ---------- 방 ---------- */
+  function openRoom(r) {
+    room = r; lsSet('diary:tRoom', r.code); $('inNames').value = '';
+    $('rTitle').textContent = r.name + ' · 방 코드 ' + r.code;
+    show('vRoom'); go(tab); refreshRoom();
+  }
+  async function refreshRoom() {
+    const j = await call('tRoom');
+    if (!j.ok) return toast(j.error);
+    roomData = j; room = j.room;
+    $('sPend').textContent = j.pending; $('sAppr').textContent = j.approvedWeek;
+    $('sLen').textContent = '글자 수 ' + j.room.minLen + '~' + j.room.maxLen + '자';
+    $('rTitle').textContent = j.room.name + ' · 방 코드 ' + j.room.code;
+    if (tab === 'pStud') renderStud();
+    if (tab === 'pSet') renderSet();
+  }
+  function anim(el, cls) { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); el.addEventListener('animationend', () => el.classList.remove(cls), { once: true }); }
+  function go(t) {
+    const changed = t !== tab;
+    tab = t;
+    document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+    document.querySelectorAll('.pane').forEach(p => p.classList.toggle('hidden', p.id !== t));
+    if (changed) anim($(t), 'fade-up');
+    if (t === 'pPend') loadPending();
+    if (t === 'pDone') loadDone();
+    if (t === 'pStud') renderStud();
+    if (t === 'pSet') renderSet();
+  }
+
+  /* ---------- 승인함 ---------- */
+  async function loadPending(keepSel) {
+    if (!pending.length) $('pList').innerHTML = '<div class="empty"><span class="spin"></span></div>';
+    const j = await call('tPending');
+    if (!j.ok) return toast(j.error);
+    pending = j.list;
+    $('sPend').textContent = pending.length;
+    if (!keepSel || !pending.find(p => p.id === sel)) sel = pending.length ? pending[0].id : null;
+    if (!editing) renderPending();
+    else renderList();
+  }
+  function tagsOf(p) {
+    const care = p.flags.filter(f => f.k === 'care').length, check = p.flags.filter(f => f.k === 'check').length;
+    return (care ? '<span class="tag care">마음 살피기</span>' : '') + (check ? `<span class="tag check">확인 표시 ${check}</span>` : '') + (!care && !check ? '<span class="tag clean">표시 없음</span>' : '');
+  }
+  function renderList() {
+    $('pList').innerHTML = pending.length ? pending.map(p => `<button class="item${p.id === sel ? ' on' : ''}" data-sel="${esc(p.id)}">
+      <div class="r1"><b>${esc(p.pen)}</b> <span class="sub">${esc(who(p.no))}</span><span class="sub">${fmt(p.createdAt)}</span></div>
+      <div class="r2"><span>${p.len}자</span>${tagsOf(p)}</div></button>`).join('') : '<div class="empty">확인할 일기가 없어요.<br>학생들이 일기를 보내면 여기에 와요.</div>';
+  }
+  function highlight(text, flags) {
+    const ranges = [], low = text.toLowerCase();
+    flags.forEach(f => {
+      const w = String(f.w).toLowerCase(); if (!w) return;
+      let i = 0; while ((i = low.indexOf(w, i)) >= 0) { ranges.push([i, i + w.length, f.k]); i += w.length; }
+    });
+    ranges.sort((a, b) => a[0] - b[0] || (a[2] === 'care' ? -1 : 1));
+    let out = '', pos = 0;
+    ranges.forEach(([s, e, k]) => { if (s < pos) return; out += esc(text.slice(pos, s)) + `<mark class="${k}">` + esc(text.slice(s, e)) + '</mark>'; pos = e; });
+    return out + esc(text.slice(pos));
+  }
+  function renderPending() {
+    renderList();
+    const p = pending.find(x => x.id === sel);
+    if (!p) { $('pDetail').innerHTML = '<div class="empty">왼쪽에서 일기를 골라 주세요.</div>'; return; }
+    const care = p.flags.filter(f => f.k === 'care'), check = p.flags.filter(f => f.k === 'check');
+    const week = roomData ? (roomData.students.find(s => s.no === p.no) || {}).week : '';
+    $('pDetail').innerHTML = `
+      <div class="head"><span class="sub">${esc(p.pen)} · ${esc(who(p.no))} · ${fmt(p.createdAt)}${p.weather ? ' · ' + esc(p.weather) : ''} · ${p.len}자</span>${week ? `<span class="sub">이번 주 ${week}번째 일기</span>` : ''}</div>
+      <div id="dView"><p class="dtext">${highlight(p.text, p.flags)}</p></div>
+      <div id="dEdit" class="editor hidden"><textarea id="eText"></textarea>
+        <div class="acts" style="margin-top:10px"><button class="btn warn sm" id="btnMask">선택한 부분 ○○로 가리기</button><button class="btn line sm" id="btnUndo">처음대로</button><span class="sub">글을 드래그해 고르고 가리기를 누르거나, 직접 고쳐도 돼요.</span></div></div>
+      ${care.length ? `<div class="note care">마음을 살펴볼 말이 있어요: <b>${care.map(f => esc(f.w)).join(', ')}</b><br>승인과 별개로 학생과 따로 이야기를 나눠 보세요.</div>` : ''}
+      ${check.length ? `<div class="note check">자동 확인: <b>${check.map(f => esc(f.w)).join(', ')}</b><br>학교·동네·연락처를 알 수 있는지 살펴 주세요.</div>` : ''}
+      <div class="acts" id="actMain">
+        <button class="btn" id="btnApprove">승인하기</button>
+        <button class="btn warn" id="btnEdit">가리기·고치기</button>
+        <span style="flex:1"></span>
+        <select id="selReason" aria-label="반려 사유">${REASONS.map(r => `<option>${esc(r)}</option>`).join('')}<option value="__">직접 쓰기…</option></select>
+        <input type="text" id="inReason" class="hidden" placeholder="학생에게 보일 말" maxlength="100">
+        <button class="btn bad" id="btnReject">반려</button>
+      </div>
+      <div class="acts hidden" id="actEdit">
+        <button class="btn" id="btnApproveEdit">고친 내용으로 승인</button>
+        <button class="btn line" id="btnCancelEdit">고치기 취소</button>
+        <span class="sub">학생에게는 "선생님이 조금 고쳐서 보냈어요"와 고친 곳이 보여요.</span>
+      </div>`;
+  }
+  function startEdit() {
+    const p = pending.find(x => x.id === sel); if (!p) return;
+    editing = true;
+    $('dView').classList.add('hidden'); $('dEdit').classList.remove('hidden');
+    $('actMain').classList.add('hidden'); $('actEdit').classList.remove('hidden');
+    $('eText').value = p.text; $('eText').focus();
+  }
+  function stopEdit() { editing = false; renderPending(); }
+  function mask() {
+    const t = $('eText'), s = t.selectionStart, e = t.selectionEnd;
+    if (s === e) return toast('가릴 부분을 먼저 드래그해서 골라 주세요.');
+    t.setRangeText('○○', s, e, 'end'); t.focus();
+  }
+  async function decide(decision, extra, btn) {
+    const p = pending.find(x => x.id === sel); if (!p) return;
+    busy(btn, true);
+    const j = await call('tDecide', Object.assign({ id: p.id, decision }, extra || {}));
+    busy(btn, false);
+    if (!j.ok) { toast(j.error); if (j.code === 'DONE') { editing = false; loadPending(); } return; }
+    editing = false;
+    const det = $('pDetail'), item = document.querySelector(`#pList .item[data-sel="${CSS.escape(p.id)}"]`);
+    if (decision === 'approve') {
+      const st = document.createElement('div'); st.className = 'stamp'; st.textContent = extra && extra.text ? '고쳐서 승인' : '승인';
+      det.appendChild(st); det.classList.add('out-up');
+    } else det.classList.add('out-l');
+    if (item) item.classList.add('out-l');
+    await new Promise(r => setTimeout(r, decision === 'approve' ? 560 : 330));
+    det.classList.remove('out-up', 'out-l');
+    const idx = pending.findIndex(x => x.id === p.id);
+    pending = j.list;
+    sel = pending.length ? pending[Math.min(idx, pending.length - 1)].id : null;
+    $('sPend').textContent = pending.length;
+    if (decision === 'approve') $('sAppr').textContent = Number($('sAppr').textContent) + 1;
+    renderPending();
+    anim(det, 'fade-up');
+    toast(decision === 'approve' ? (extra && extra.text ? '고쳐서 승인했어요.' : '승인했어요. 학생에게 뽑기권이 생겼어요.') : '반려했어요. 학생이 다시 쓸 수 있어요.');
+  }
+
+  /* ---------- 처리한 일기 ---------- */
+  function diff(a, b) {
+    const A = a.split(/(\s+)/), B = b.split(/(\s+)/), n = A.length, m = B.length;
+    if (n * m > 400000) return esc(b);
+    const L = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    let i = 0, j = 0, out = '';
+    const d = s => s.trim() ? '<del>' + esc(s) + '</del>' : esc(s), n2 = s => s.trim() ? '<ins>' + esc(s) + '</ins>' : esc(s);
+    while (i < n && j < m) { if (A[i] === B[j]) { out += esc(A[i]); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) out += d(A[i++]); else out += n2(B[j++]); }
+    while (i < n) out += d(A[i++]); while (j < m) out += n2(B[j++]);
+    return out;
+  }
+  let doneList = [], doneEdit = null;
+  async function loadDone(keep) {
+    if (!keep) $('doneBox').innerHTML = '<div class="empty"><span class="spin"></span></div>';
+    const j = await call('tDone');
+    if (!j.ok) return toast(j.error);
+    doneList = j.list; doneEdit = null; renderDone();
+  }
+  function renderDone() {
+    $('doneBox').innerHTML = '<h2>최근 2주 동안 처리한 일기</h2>' + (doneList.length ? doneList.map(p => {
+      const st = p.status === 'approved' ? `<span class="tag clean">승인 · ${p.drawCount}명이 뽑음</span>` : p.status === 'deleted' ? '<span class="tag" style="background:#ECEFEE;color:#4a5f5b">삭제함</span>' : `<span class="tag care">반려: ${esc(p.reason)}</span>`;
+      const stk = Object.keys(p.stickers || {}).map(k => `${esc(k)} ${p.stickers[k]}`).join(' · ');
+      const acts = p.status === 'approved' ? `<button class="btn warn sm" data-dedit="${esc(p.id)}">가리기·고치기</button><button class="btn bad sm" data-ddel="${esc(p.id)}">삭제</button>`
+        : p.status === 'rejected' ? `<button class="btn sm" data-dapprove="${esc(p.id)}">승인으로 바꾸기</button><button class="btn bad sm" data-ddel="${esc(p.id)}">삭제</button>` : '';
+      const editing = doneEdit === p.id;
+      return `<div class="done" data-did="${esc(p.id)}"><div class="r1"><span><b>${esc(p.pen)}</b> · ${esc(who(p.no))} · ${fmt(p.createdAt)}</span><span style="display:flex;gap:6px;flex-wrap:wrap">${p.edited ? '<span class="tag edit">고쳐서 승인</span>' : ''}${st}</span></div>
+        ${stk ? `<span class="sub">받은 스티커: ${stk}</span>` : ''}
+        ${editing ? `<div class="editor"><textarea id="dText">${esc(p.text)}</textarea>
+          <div class="acts" style="margin-top:8px"><button class="btn warn sm" data-dmask="1">선택한 부분 ○○로 가리기</button><button class="btn sm" data-dsave="${esc(p.id)}">고친 내용 저장</button><button class="btn line sm" data-dcancel="1">취소</button></div>
+          <p class="sub" style="margin:6px 0 0">이미 뽑아 간 친구 화면에도 고친 내용으로 보여요.</p></div>`
+        : `<details><summary>내용 보기</summary><div class="body">${p.edited ? diff(p.original, p.text) : esc(p.text)}</div></details>${acts ? `<div class="acts" style="margin-top:4px">${acts}</div>` : ''}`}</div>`;
+    }).join('') : '<div class="empty">아직 처리한 일기가 없어요.</div>');
+  }
+  async function revise(op, id, btn, extra) {
+    const p = doneList.find(x => x.id === id); if (!p) return;
+    if (op === 'delete' && !confirm(`${p.pen}의 일기를 삭제할까요?\n쪽지함에서 빠지고, 이미 뽑아 간 친구 화면에서도 사라져요.`)) return;
+    if (op === 'approve' && !confirm(`반려했던 ${p.pen}의 일기를 승인할까요?\n학생에게 뽑기권이 1장 생겨요.`)) return;
+    busy(btn, true);
+    const j = await call('tRevise', Object.assign({ op, id }, extra || {}));
+    busy(btn, false);
+    if (!j.ok) return toast(j.error);
+    doneList = j.list; doneEdit = null; renderDone();
+    anim(document.querySelector(`.done[data-did="${CSS.escape(id)}"]`), 'fade-up');
+    toast({ edit: '고친 내용을 저장했어요.', approve: '승인으로 바꿨어요. 학생에게 뽑기권이 생겼어요.', delete: '삭제했어요.' }[op]);
+    if (op === 'approve') refreshRoom();
+  }
+
+  /* ---------- 학생 코드 ---------- */
+  const studentURL = () => { let b = ''; try { b = new URL('./', location.href).href; } catch (e) {} if (!/^https?:/.test(b)) b = 'https://dobbi52.github.io/diary/'; return b + '?room=' + (room ? room.code : ''); };
+  const nameKey = () => 'diary:names:' + (room ? room.code : '');
+  function names() { try { return JSON.parse(lsGet(nameKey()) || '{}'); } catch (e) { return {}; } }
+  function who(no) { const n = names()[no]; return no ? no + '번' + (n ? ' ' + n : '') : '(나간 학생)'; }
+  function saveNames() {
+    const list = $('inNames').value.split(/\n/).map(x => x.trim());
+    while (list.length && !list[list.length - 1]) list.pop();
+    if (!list.length) return toast('이름을 한 줄에 한 명씩 붙여 넣어 주세요.');
+    const m = {}; list.forEach((n, i) => { if (n) m[i + 1] = n.slice(0, 20); });
+    lsSet(nameKey(), JSON.stringify(m)); renderStud(); toast('이 기기에 이름을 저장했어요.');
+  }
+  function clearNames() { if (!confirm('이 기기에 저장한 이름을 지울까요?')) return; lsSet(nameKey(), null); $('inNames').value = ''; renderStud(); }
+  function renderStud() {
+    if (!roomData) return;
+    const nm = names();
+    if (!$('inNames').value) { const mx = Math.max(0, ...Object.keys(nm).map(Number)); $('inNames').value = Array.from({ length: mx }, (_, i) => nm[i + 1] || '').join('\n'); }
+    $('studLink').innerHTML = `학생 주소: <a href="${esc(studentURL())}" target="_blank" rel="noopener">${esc(studentURL())}</a>`;
+    const s = roomData.students;
+    $('studBody').innerHTML = s.length ? s.map(x => `<tr><td><b>${x.no}</b></td><td>${nm[x.no] ? esc(nm[x.no]) : '<span class="sub">-</span>'}</td><td data-pencell="${esc(x.code)}">${x.pen ? esc(x.pen) : '<span class="sub">아직 안 정함</span>'} <button class="btn line sm" data-penedit="${esc(x.code)}" style="margin-left:4px">${x.pen ? '바꾸기' : '정하기'}</button></td><td>${x.locked ? '<span class="tag care">잠김 (10분)</span>' : x.hasPin ? '<span class="tag clean">정함</span>' : '<span class="tag check">아직</span>'}</td><td>${x.week} / 2</td>
+      <td style="white-space:nowrap"><button class="btn line sm" data-op="resetPin" data-c="${esc(x.code)}"${x.hasPin ? '' : ' disabled'}>비밀번호 초기화</button> <button class="btn line sm" data-op="resetPen" data-c="${esc(x.code)}">필명 초기화</button> <button class="btn bad sm" data-op="remove" data-c="${esc(x.code)}">빼기</button></td></tr>`).join('') : '<tr><td colspan="6" class="sub">아직 번호가 없어요. 위에서 더해 주세요.</td></tr>';
+  }
+  async function addStudents() {
+    const count = Number($('inAddCount').value);
+    if (!(count >= 1 && count <= 40)) return ($('studMsg').textContent = '1~40 사이로 넣어 주세요.');
+    const b = $('btnAdd'); busy(b, true);
+    const j = await call('tAddStudents', { count });
+    busy(b, false);
+    if (!j.ok) return ($('studMsg').textContent = j.error);
+    $('studMsg').textContent = '';
+    roomData = j; renderStud(); toast(count + '명을 더했어요.');
+  }
+  function penEdit(code) {
+    const st = roomData.students.find(x => x.code === code); if (!st) return;
+    const td = document.querySelector(`[data-pencell="${code}"]`);
+    td.innerHTML = `<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="text" maxlength="8" value="${esc(st.pen)}" style="width:120px;padding:6px 8px" aria-label="새 필명" id="penIn-${esc(code)}"><button class="btn sm" data-pensave="${esc(code)}">저장</button><button class="btn line sm" data-pencancel="1">취소</button></div>`;
+    const inp = document.getElementById('penIn-' + code); inp.focus(); inp.select();
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') penSave(code, td.querySelector('[data-pensave]')); if (e.key === 'Escape') renderStud(); });
+  }
+  async function penSave(code, btn) {
+    const pen = document.getElementById('penIn-' + code).value.trim();
+    if (!/^[가-힣A-Za-z0-9]{2,8}$/.test(pen)) return toast('필명은 한글·영어·숫자 2~8자, 띄어쓰기 없이 써 주세요.');
+    busy(btn, true);
+    const j = await call('tStudent', { op: 'setPen', code, pen });
+    busy(btn, false);
+    if (!j.ok) return toast(j.error);
+    roomData = j; renderStud(); toast('필명을 ' + pen + '(으)로 바꿨어요.');
+  }
+  async function studentOp(op, code, btn) {
+    const s = roomData.students.find(x => x.code === code);
+    const w = who(s.no);
+    const q = { resetPin: `${w} 학생의 비밀번호를 지울까요? 다음에 들어올 때 새로 정해요. (일기 기록은 그대로)`, resetPen: `${w} 학생의 필명을 지울까요? 다음에 들어올 때 새로 정해요.`, remove: `${w} 학생을 방에서 뺄까요? 번호가 명단에서 사라져요.` }[op];
+    if (!confirm(q)) return;
+    busy(btn, true);
+    const j = await call('tStudent', { op, code });
+    busy(btn, false);
+    if (!j.ok) return toast(j.error);
+    roomData = j; renderStud();
+  }
+  function printCards() {
+    if (!roomData || !roomData.students.length) return toast('먼저 학생을 넣어 주세요.');
+    $('print').innerHTML = roomData.students.map(s => `<div class="pc"><b>${esc(who(s.no))}</b> · 우리들의 교환일기<br>주소: ${esc(studentURL())}<br>방 코드 <span class="code">${esc(room.code)}</span><br><small>방 코드를 넣고 내 번호를 눌러요. 처음에는 나만 아는 비밀번호 숫자 4자리를 정해요.</small></div>`).join('');
+    print();
+  }
+
+  /* ---------- 설정 ---------- */
+  function renderSet() {
+    if (!room) return;
+    $('setName').value = room.name; $('setMin').value = room.minLen; $('setMax').value = room.maxLen;
+  }
+  async function saveSet() {
+    const b = $('btnSet'); busy(b, true);
+    const j = await call('tSettings', { name: $('setName').value, minLen: Number($('setMin').value), maxLen: Number($('setMax').value) });
+    busy(b, false);
+    if (!j.ok) { $('setMsg').className = 'msg'; return ($('setMsg').textContent = j.error); }
+    $('setMsg').className = 'msg ok'; $('setMsg').textContent = '저장했어요.';
+    refreshRoom();
+  }
+
+  function openGuide() { $('tGuide').classList.remove('hidden'); anim($('tGuide').querySelector('.sheet'), 'pop-in'); lsSet('diary:tGuide', '1'); }
+
+  /* ---------- 이벤트 ---------- */
+  document.addEventListener('click', e => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.hasAttribute('data-logout')) { ArcadeAuth.logout(); room = null; lsSet('diary:tRoom', null); return show('vLogin'); }
+    if (t.dataset.guide) return openGuide();
+    if (t.dataset.guideclose) return $('tGuide').classList.add('hidden');
+    if (t.dataset.room) return openRoom(JSON.parse(t.dataset.room));
+    if (t.dataset.tab) return go(t.dataset.tab);
+    if (t.dataset.sel) { if (editing && !confirm('고치던 내용이 사라져요. 다른 일기로 갈까요?')) return; editing = false; sel = t.dataset.sel; renderPending(); return anim($('pDetail'), 'fade-up'); }
+    if (t.dataset.op) return studentOp(t.dataset.op, t.dataset.c, t);
+    if (t.dataset.dedit) { doneEdit = t.dataset.dedit; renderDone(); return $('dText').focus(); }
+    if (t.dataset.dcancel) { doneEdit = null; return renderDone(); }
+    if (t.dataset.dmask) { const e = $('dText'), a = e.selectionStart, b = e.selectionEnd; if (a === b) return toast('가릴 부분을 먼저 드래그해서 골라 주세요.'); e.setRangeText('○○', a, b, 'end'); return e.focus(); }
+    if (t.dataset.dsave) return revise('edit', t.dataset.dsave, t, { text: $('dText').value });
+    if (t.dataset.ddel) return revise('delete', t.dataset.ddel, t);
+    if (t.dataset.dapprove) return revise('approve', t.dataset.dapprove, t);
+    if (t.dataset.penedit) return penEdit(t.dataset.penedit);
+    if (t.dataset.pensave) return penSave(t.dataset.pensave, t);
+    if (t.dataset.pencancel) return renderStud();
+    switch (t.id) {
+      case 'btnLogin': return ArcadeAuth.open({ gameName: '교환일기 선생님 방', color: '#6ef2d3', onPlay: boot });
+      case 'btnInvite': return invite();
+      case 'btnRoom': return createRoom();
+      case 'btnBack': room = null; lsSet('diary:tRoom', null); pending = []; return boot();
+      case 'btnApprove': return decide('approve', null, t);
+      case 'btnEdit': return startEdit();
+      case 'btnMask': return mask();
+      case 'btnUndo': { const p = pending.find(x => x.id === sel); if (p) $('eText').value = p.text; return; }
+      case 'btnCancelEdit': return stopEdit();
+      case 'btnApproveEdit': {
+        const p = pending.find(x => x.id === sel); const nt = $('eText').value.trim();
+        if (!nt) return toast('내용이 비어 있어요.');
+        return decide('approve', nt !== p.text ? { text: nt } : null, t);
+      }
+      case 'btnReject': {
+        const v = $('selReason').value, reason = v === '__' ? $('inReason').value.trim() : v;
+        if (!reason) return toast('반려 사유를 써 주세요.');
+        return decide('reject', { reason }, t);
+      }
+      case 'btnAdd': return addStudents();
+      case 'btnNames': return saveNames();
+      case 'btnNamesClear': return clearNames();
+      case 'btnPrint': return printCards();
+      case 'btnSet': return saveSet();
+    }
+  });
+  document.addEventListener('change', e => { if (e.target.id === 'selReason') $('inReason').classList.toggle('hidden', e.target.value !== '__'); });
+  ArcadeAuth.onChange(a => { if (a && !acc) boot(); acc = a; });
+  setInterval(() => { if (room && tab === 'pPend' && !editing && !document.hidden) loadPending(true); }, 60000);
+  addEventListener('focus', () => { if (room && tab === 'pPend' && !editing) loadPending(true); else if (room && tab === 'pDone' && !doneEdit) loadDone(true); });
+  boot();
+})();
+</script>
+</body>
+</html>
