@@ -9,6 +9,8 @@ var TEACHER_INVITE = 'DIARY';  // 교사 초대 코드 (바꾸려면 따옴표 �
 var ACCOUNT_API = 'https://script.google.com/macros/s/AKfycbzZlmUD9M4rfo4Y4eEYgNjZH0N8SppUA1Otuo9yMEOqcLfklw8XbS5ZmXj1D3KZY4EG/exec'; // 생각 오락실 통합 계정
 var WEEKLY_LIMIT = 2;        // 학생 한 명이 일주일에 쓸 수 있는 일기
 var MAX_READERS = 2;         // 일기 한 편을 뽑을 수 있는 사람 수
+var SAMPLE_READERS = 3;      // 예시 일기 한 편을 뽑을 수 있는 사람 수
+var SAMPLE_TEACHER = '__예시__';
 var TICKET_DAYS = 7;         // 뽑기권 기한
 var READ_DAYS = 7;           // 뽑은 일기를 볼 수 있는 기간
 var DEFAULT_MIN = 150, DEFAULT_MAX = 800;
@@ -32,6 +34,54 @@ function setup() {
     if (sh.getLastRow() === 0) sh.appendRow(TABLES[name]);
   });
   Logger.log('준비 완료! 교사 초대 코드: ' + TEACHER_INVITE);
+}
+
+/* 예시 일기: 처음에 쪽지함이 비지 않도록 미리 넣어 두는 일기 15편 */
+function readerLimit(x) {
+  if (!_cache.__sample) {
+    var m = {};
+    filter('Rooms', function (r) { return String(r.teacher) === SAMPLE_TEACHER; }).forEach(function (r) { m[String(r.code)] = bool(r.active) ? SAMPLE_READERS : 0; });
+    _cache.__sample = m;
+  }
+  var v = _cache.__sample[String(x.room)];
+  return v === undefined ? MAX_READERS : v;
+}
+var SAMPLES = [
+  ['달빛여우', '맑음', '오늘은 학예회 연습을 했다. 우리 반은 합창을 하는데 나는 앞줄 가운데에 서게 되었다. 처음에는 너무 떨려서 목소리가 잘 안 나왔지만 친구들이랑 같이 부르니까 점점 재미있어졌다. 연습이 끝나고 집에 오는 길에 엄마랑 붕어빵을 사 먹었는데 팥붕어빵이 제일 맛있었다. 다음 주 공연 날까지 가사를 다 외워야 해서 오늘 밤에도 노래를 열 번은 불러 볼 생각이다. 무대에서 실수하지 않으면 좋겠다.'],
+  ['새벽참새', '흐림', '우리 집 고양이 이름은 호떡이다. 털 색깔이 꼭 호떡처럼 노릇노릇해서 내가 지어 준 이름이다. 호떡이는 아침마다 내 이불 위에 올라와서 얼굴을 꾹꾹 누르며 깨운다. 오늘은 호떡이가 내 필통을 책상 밑으로 떨어뜨려서 지우개를 찾느라 학교에 늦을 뻔했다. 그래도 학교 끝나고 집에 오면 문 앞에서 야옹 하고 기다리고 있어서 미워할 수가 없다. 오늘 저녁에는 호떡이랑 낚싯대 장난감으로 놀아 줬다.'],
+  ['초록거북', '비', '비가 와서 점심시간에 운동장에 못 나갔다. 대신 교실에서 친구들이랑 공기놀이를 했는데 내가 꺾기를 처음으로 성공했다! 손등에 공기알 다섯 개를 다 올렸을 때 친구들이 박수를 쳐 줘서 정말 뿌듯했다. 지난주까지만 해도 두 개도 못 올렸는데 매일 조금씩 연습한 덕분인 것 같다. 집에 와서도 혼자 계속 연습했더니 손가락이 조금 아프다. 내일은 친구들에게 꺾기 비법을 알려 주기로 했다.'],
+  ['솜사탕곰', '맑음', '오늘 수학 시간에 원의 넓이를 배웠다. 처음에는 원주율이 왜 3.14인지 하나도 이해가 안 됐는데 선생님이 원을 잘게 잘라서 직사각형처럼 이어 붙이는 걸 보여 주셔서 정말 신기했다. 저녁에 가족이랑 피자를 먹으면서 피자 넓이도 계산해 봤다. 그런데 내가 열심히 계산하는 동안 동생이 제일 큰 조각을 먼저 먹어 버렸다. 수학 공부를 하다가 피자를 뺏긴 날로 기억될 것 같다. 그래도 원의 넓이 구하는 방법은 절대 안 잊어버릴 것 같다.'],
+  ['파란고래', '눈', '아침에 일어났더니 창밖에 첫눈이 조금 내리고 있었다! 너무 신나서 양말도 안 신고 베란다로 달려 나갔다가 엄마한테 혼났다. 눈이 금방 녹아 버려서 눈사람은 못 만들었지만 학교 가는 길에 눈을 맞으면서 걸으니까 기분이 정말 좋았다. 교실에서도 친구들이 창밖만 보면서 첫눈 이야기를 했다. 겨울방학에는 할머니 댁에 가서 썰매를 타기로 했다. 벌써부터 방학이 기다려진다. 썰매 탈 때 입을 장갑도 미리 챙겨 두었다.'],
+  ['햇살토끼', '맑음', '오늘은 체육 시간에 줄넘기 급수 시험을 봤다. 지난번에는 이단뛰기를 세 번밖에 못 했는데 오늘은 열두 번이나 해서 한 급수 올라갔다. 매일 저녁 집 앞 놀이터에서 연습한 보람이 있었다. 시험이 끝나고 선생님이 잘했다고 엄지를 들어 주셔서 하루 종일 기분이 좋았다. 다음 목표는 엇갈아 뛰기를 스무 번 넘게 하는 것이다. 오늘부터 다시 연습 시작이다. 줄넘기 줄도 새것으로 바꿨다.'],
+  ['구름양', '흐림', '요즘 나는 종이접기에 푹 빠져 있다. 어제는 종이접기 책을 보면서 학을 접었는데 날개가 자꾸 찢어져서 다섯 번 만에 겨우 성공했다. 오늘은 반짝이 색종이로 장미를 접어서 엄마에게 드렸더니 식탁 위 컵에 꽂아 두셨다. 엄마가 진짜 꽃보다 오래가서 좋다고 하셔서 뿌듯했다. 다음에는 폴짝폴짝 뛰는 개구리를 접어서 동생이랑 멀리뛰기 시합을 해 볼 생각이다. 내 책상 서랍은 벌써 종이접기 작품으로 꽉 찼다.'],
+  ['노란병아리', '맑음', '오늘 급식에 내가 제일 좋아하는 떡볶이가 나왔다. 아침부터 식단표를 보고 기다렸는데 배식 줄이 너무 길어서 기다리는 동안 배에서 꼬르륵 소리가 크게 났다. 옆에 있던 친구가 그 소리를 듣고 웃어서 나도 같이 웃어 버렸다. 떡볶이는 기다린 만큼 정말 맛있었고 국물까지 싹싹 다 먹었다. 집에 와서 엄마에게 떡볶이 이야기를 했더니 주말에 같이 만들어 먹자고 하셨다. 벌써 주말이 기다려진다.'],
+  ['별빛사슴', '비', '비 오는 날에는 우산을 쓰고 걷는 게 좋다. 우산 위로 빗방울이 톡톡 떨어지는 소리가 꼭 음악 같기 때문이다. 오늘은 새로 산 노란 장화를 신고 일부러 웅덩이를 하나씩 밟으면서 집에 왔다. 첨벙 소리가 날 때마다 웃음이 났다. 엄마는 바지가 다 젖었다고 하셨지만 따뜻한 코코아를 타 주셨다. 창밖의 비를 보면서 코코아를 마시니까 마음까지 따뜻해졌다. 내일도 비가 오면 또 웅덩이를 찾아 걸어야겠다.'],
+  ['바람개비', '맑음', '주말에 아빠랑 자전거를 타고 강가에 다녀왔다. 처음에는 바람이 세서 페달을 밟아도 앞으로 잘 안 나갔다. 다리가 너무 아파서 그만 돌아가고 싶었지만 아빠가 조금만 더 가 보자고 하셨다. 돌아올 때는 바람이 등을 밀어 줘서 엄청 빨리 달릴 수 있었다. 중간에 쉼터에서 아빠랑 컵라면을 먹었는데 밖에서 먹으니까 집에서보다 두 배는 맛있었다. 다음 주에도 또 가고 싶다. 그때는 내가 앞장서서 달릴 거다.'],
+  ['딸기우유', '흐림', '오늘은 동생 생일이었다. 한 달 동안 용돈을 모아서 동생이 좋아하는 공룡 스티커북을 선물했더니 펄쩍펄쩍 뛰면서 좋아했다. 저녁에 케이크에 초를 꽂고 다 같이 생일 축하 노래를 불렀다. 동생이 소원을 비는 동안 눈을 너무 꼭 감아서 얼굴이 빨개진 게 정말 웃겼다. 무슨 소원을 빌었냐고 물어봐도 비밀이라며 안 알려 줬다. 동생 덕분에 나까지 기분 좋은 하루였다. 내 생일도 얼른 오면 좋겠다.'],
+  ['은하수', '맑음', '오늘 과학 시간에 소금물에 달걀을 띄우는 실험을 했다. 맹물에서는 달걀이 바닥에 가라앉아 있었는데 소금을 조금씩 넣을 때마다 달걀이 천천히 떠올라서 모두 우와 하고 소리를 질렀다. 우리 모둠은 신이 나서 소금을 너무 많이 넣는 바람에 물이 뿌옇게 됐지만 그래도 실험은 성공이었다. 바닷물에서 몸이 잘 뜨는 것도 같은 까닭이라고 한다. 집에서도 꼭 해 보고 싶다. 오늘 저녁에 엄마에게 소금을 빌려 봐야겠다.'],
+  ['코코넛', '눈', '아침에 너무 추워서 이불 밖으로 나오기가 정말 싫었다. 엄마가 세 번이나 깨우셔서 겨우 일어났고 아침밥도 반만 먹고 뛰어나왔다. 학교에 가니 교실 난로 옆자리를 차지하려고 친구들이 일찍 와 있었다. 나는 늦게 와서 창가에 앉았는데 햇볕이 들어와서 생각보다 따뜻했다. 내일은 알람을 하나 더 맞춰서 일찍 일어나 볼 생각이다. 과연 성공할 수 있을지 모르겠다. 이불 속은 왜 이렇게 따뜻한 걸까.'],
+  ['민트초코', '맑음', '오늘은 도서관에서 탐정 소설을 빌렸다. 표지에 돋보기를 든 아이가 그려져 있어서 고른 책이었다. 쉬는 시간마다 조금씩 읽었는데 범인이 누구인지 너무 궁금해서 집에 오자마자 숙제도 미루고 끝까지 다 읽어 버렸다. 내가 처음부터 의심한 사람이 범인이 아니라서 깜짝 놀랐다. 작은 단서가 앞쪽에 숨어 있었다는 걸 알고 다시 읽어 보았다. 내일은 같은 작가의 다른 책을 빌릴 거다.'],
+  ['해바라기', '흐림', '요즘 피아노 수업에서 새 곡을 배우고 있다. 왼손과 오른손이 따로 움직여야 해서 처음에는 손가락이 자꾸 꼬였다. 매일 집에서 천천히 한 마디씩 연습했더니 오늘은 처음부터 끝까지 한 번도 안 틀리고 칠 수 있었다. 선생님이 칭찬 스티커를 두 개나 주셔서 날아갈 것 같았다. 다음 달에는 작은 연주회가 있다. 그날도 오늘처럼 떨지 않고 잘 치고 싶다. 오늘 밤에도 한 번 더 연습하고 자야겠다.']
+];
+function addSamples() {
+  setup();
+  if (find('Rooms', function (r) { return String(r.teacher) === SAMPLE_TEACHER; })) { Logger.log('예시 일기가 이미 들어 있어요.'); return; }
+  var code; do { code = randCode(5); } while (find('Rooms', function (r) { return String(r.code) === code; }));
+  insert('Rooms', { code: code, teacher: SAMPLE_TEACHER, name: '예시 방', minLen: DEFAULT_MIN, maxLen: DEFAULT_MAX, createdAt: now(), active: true });
+  var t = now();
+  SAMPLES.forEach(function (x, i) {
+    var sc = randCode(6), at = t - (SAMPLES.length - i) * 3600000;
+    insert('Students', { room: code, code: sc, no: i + 1, pen: x[0], pinHash: '', fails: 0, lockUntil: '', createdAt: at, active: true });
+    insert('Diaries', { id: uid(), room: code, student: sc, pen: x[0], text: x[2], original: '', weather: x[1], len: countLen(x[2]), flags: '[]', status: 'approved', reason: '', edited: false, createdAt: at, decidedAt: at, drawCount: 0 });
+  });
+  Logger.log('예시 일기 ' + SAMPLES.length + '편을 쪽지함에 넣었어요. (한 편당 ' + SAMPLE_READERS + '명까지)');
+}
+/* 아이들 일기가 충분히 쌓이면 실행: 예시 일기는 더 이상 뽑히지 않아요 (이미 받은 친구 화면에는 7일 동안 남아요) */
+function removeSamples() {
+  var r = find('Rooms', function (x) { return String(x.teacher) === SAMPLE_TEACHER && bool(x.active); });
+  if (!r) { Logger.log('들어 있는 예시 일기가 없어요.'); return; }
+  update('Rooms', r, { active: false });
+  Logger.log('예시 일기를 쪽지함에서 뺐어요.');
 }
 
 /* ---------------- 입구 ---------------- */
@@ -434,7 +484,7 @@ function liveTickets(a, t) {
 function poolSize(a) {
   var t = now(), mine = {};
   filter('Draws', function (r) { return String(r.room) === String(a.room.code) && String(r.student) === String(a.s.code); }).forEach(function (r) { mine[String(r.diaryId)] = 1; });
-  return filter('Diaries', function (x) { return String(x.status) === 'approved' && String(x.room) !== String(a.room.code) && num(x.drawCount) < MAX_READERS && !mine[String(x.id)]; }).length;
+  return filter('Diaries', function (x) { return String(x.status) === 'approved' && String(x.room) !== String(a.room.code) && num(x.drawCount) < readerLimit(x) && !mine[String(x.id)]; }).length;
 }
 function sHome(d) {
   var a = student(d), t = now(), ws = weekStart(t);
@@ -495,7 +545,7 @@ function sDraw(d) {
     }
   });
   var pool = filter('Diaries', function (x) {
-    return String(x.status) === 'approved' && String(x.room) !== String(a.room.code) && num(x.drawCount) < MAX_READERS && !mineDrawn[String(x.id)];
+    return String(x.status) === 'approved' && String(x.room) !== String(a.room.code) && num(x.drawCount) < readerLimit(x) && !mineDrawn[String(x.id)];
   });
   if (!pool.length) fail('아직 도착한 쪽지가 없어요. 뽑기권은 그대로 남아 있으니 조금 뒤에 다시 와 주세요.', 'EMPTY');
   var fresh = pool.filter(function (x) { return !recentAuthors[String(x.room) + '/' + String(x.student)]; });
