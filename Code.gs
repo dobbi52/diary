@@ -95,8 +95,18 @@ function doPost(e) {
   }
   return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
 }
-function doGet() {
-  return ContentService.createTextOutput(JSON.stringify({ ok: true, name: '우리들의 교환일기' })).setMimeType(ContentService.MimeType.JSON);
+function doGet(e) {
+  var out = { ok: true, name: '우리들의 교환일기' };
+  if (e && e.parameter && e.parameter.waiting) out.waiting = waitingCount();
+  return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
+/* 생각 오락실 카드용: 아직 더 뽑힐 수 있는 일기 수 (1분 동안 기억해 둠) */
+function waitingCount() {
+  var cache = CacheService.getScriptCache(), hit = cache.get('waiting');
+  if (hit != null) return Number(hit);
+  var n = filter('Diaries', function (x) { return String(x.status) === 'approved' && num(x.drawCount) < readerLimit(x); }).length;
+  cache.put('waiting', String(n), 60);
+  return n;
 }
 
 function fail(msg, code) { var e = new Error(msg); e.userMsg = msg; e.code = code || 'ERR'; throw e; }
